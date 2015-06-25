@@ -2,6 +2,8 @@ package com.mightycircuit.www.spotifystreamer;
 
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
@@ -22,7 +24,7 @@ import java.util.List;
 /**
  * A placeholder fragment containing a simple view.
  */
-public class MainActivityFragment extends Fragment implements OnEditorActionListener{
+public class MainActivityFragment extends Fragment {
     private static final String LOG_TAG ="SpotifyStreamer" ;
     public ArrayAdapter<String> mArtistAdapter;
     private EditText editText;
@@ -61,7 +63,7 @@ public class MainActivityFragment extends Fragment implements OnEditorActionList
 
         View rootView = inflater.inflate(R.layout.fragment_main, container, false);
 
-        Log.d(LOG_TAG,"setAdapter");
+        Log.d(LOG_TAG, "setAdapter");
 
         // Get a reference to the ListView, and attach this adapter to it.
         ListView listView = (ListView) rootView.findViewById(R.id.listView_Artists);
@@ -69,20 +71,40 @@ public class MainActivityFragment extends Fragment implements OnEditorActionList
 
         // Get a ref to the editText and set a listener to it
         editText = (EditText) rootView.findViewById(R.id.editText);
-        editText.setOnEditorActionListener(this);
+        //editText.setOnEditorActionListener(this);
+        editText.addTextChangedListener(textWatcher);
 
         //return inflater.inflate(R.layout.fragment_main, container, false);
         return rootView;
     }
 
-    @Override
-    public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
 
-        String mArtistName = v.getText().toString();
-        Log.d(LOG_TAG,mArtistName);
-        //display in short period of time
-        Toast.makeText(v.getContext(), mArtistName, Toast.LENGTH_SHORT).show();
+   // public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+   private final TextWatcher textWatcher = new TextWatcher() {
+       @Override
+       public void beforeTextChanged(CharSequence s, int start, int count, int after) {
 
-        return false;
-    }
+       }
+       @Override
+       public void onTextChanged(CharSequence s, int start, int before, int count) {
+           editText.setVisibility(View.VISIBLE);
+
+
+       }
+       @Override
+       public void afterTextChanged(Editable s) {
+           if (s.length() == 0) {
+               //do nothing
+           } else{
+               String mArtistName = editText.getText().toString();
+               Log.d(LOG_TAG,mArtistName);
+
+           }
+       }
+   };
+
+
+
+      //  return false;
+    //}
 }
