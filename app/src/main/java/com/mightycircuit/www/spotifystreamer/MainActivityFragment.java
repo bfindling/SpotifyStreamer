@@ -7,12 +7,14 @@ import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.TextView;
 
 import java.io.BufferedReader;
 import java.net.HttpURLConnection;
@@ -28,7 +30,7 @@ import kaaes.spotify.webapi.android.models.ArtistsPager;
 /**
  * A placeholder fragment containing a simple view.
  */
-public class MainActivityFragment extends Fragment implements TextWatcher {
+public class MainActivityFragment extends Fragment implements TextView.OnEditorActionListener {
     public static final String LOG_TAG = "SpotifyStreamer";
     public ArrayAdapter<String> mArtistAdapter;
     private EditText editText;
@@ -85,8 +87,7 @@ public class MainActivityFragment extends Fragment implements TextWatcher {
 
         // Get a ref to the editText and set a listener to it
         editText = (EditText) rootView.findViewById(R.id.editText);
-        //editText.setOnEditorActionListener(this);
-        editText.addTextChangedListener(this);
+        editText.setOnEditorActionListener(this);
 
 
         //setup spotify wrapper api
@@ -108,31 +109,13 @@ public class MainActivityFragment extends Fragment implements TextWatcher {
     }
 
     @Override
-    public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+    public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
 
+        fetchArtistTask.execute(editText.getText().toString());
+
+        return false;
     }
 
-    @Override
-    public void onTextChanged(CharSequence s, int start, int before, int count) {
-
-    }
-
-    @Override
-    public void afterTextChanged(Editable s) {
-        if (s.length() == 0) {
-            //do nothing
-        } else {
-
-            //need to put this inside of an asynch task
-//            String mArtistName = editText.getText().toString();
-//            SpotifyService spotify = api.getService();
-//            ArtistsPager results = spotify.searchArtists(mArtistName);
-//            Log.d(LOG_TAG, results.toString());
-
-            fetchArtistTask.execute("Metallica");
-
-        }
-    }
 
     public class FetchArtistTask extends AsyncTask<String,Void,ArtistsPager> {
 
@@ -184,7 +167,7 @@ public class MainActivityFragment extends Fragment implements TextWatcher {
             //convert to string
             //mArtistAdapter.addAll(artistsResults);
 
-            Log.d(LOG_TAG, "artist:" + artistsResults);
+            Log.d(LOG_TAG, "artist:" + artistsResults.artists);
 
             //mForecastAdapter.notifyDataSetChanged();
 
