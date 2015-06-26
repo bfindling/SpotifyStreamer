@@ -1,39 +1,53 @@
 package com.mightycircuit.www.spotifystreamer;
 
+import android.net.Uri;
+import android.os.AsyncTask;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
-import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ListView;
-import android.widget.TextView;
-import android.widget.TextView.OnEditorActionListener;
-import android.widget.Toast;
 
+import java.io.BufferedReader;
+import java.net.HttpURLConnection;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+
+import kaaes.spotify.webapi.android.SpotifyApi;
+import kaaes.spotify.webapi.android.SpotifyService;
+import kaaes.spotify.webapi.android.models.ArtistsPager;
 
 
 /**
  * A placeholder fragment containing a simple view.
  */
-public class MainActivityFragment extends Fragment {
-    private static final String LOG_TAG ="SpotifyStreamer" ;
+public class MainActivityFragment extends Fragment implements TextWatcher {
+    public static final String LOG_TAG = "SpotifyStreamer";
     public ArrayAdapter<String> mArtistAdapter;
     private EditText editText;
-
-    public int postCode=91364;
+    public FetchArtistTask fetchArtistTask;
+    public SpotifyApi api;
+    SpotifyService spotify;
+    public ArtistsPager results;
     public List<String> mTemporary;
+
     public MainActivityFragment() {
     }
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setHasOptionsMenu(true);
+        fetchArtistTask = new FetchArtistTask();
+        // fetchWeatherTask.execute("91364");
 
+    }
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -72,39 +86,112 @@ public class MainActivityFragment extends Fragment {
         // Get a ref to the editText and set a listener to it
         editText = (EditText) rootView.findViewById(R.id.editText);
         //editText.setOnEditorActionListener(this);
-        editText.addTextChangedListener(textWatcher);
+        editText.addTextChangedListener(this);
+
+
+        //setup spotify wrapper api
+        api = new SpotifyApi();
+
+
+        //test
+//        String mArtistName = "beyonce";
+//        SpotifyService spotify = api.getService();
+//        results = spotify.searchArtists(mArtistName);
+//        Log.d(LOG_TAG, results.toString());SpotifyService spotify
+
+
+
+
 
         //return inflater.inflate(R.layout.fragment_main, container, false);
         return rootView;
     }
 
+    @Override
+    public void beforeTextChanged(CharSequence s, int start, int count, int after) {
 
-   // public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
-   private final TextWatcher textWatcher = new TextWatcher() {
-       @Override
-       public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+    }
 
-       }
-       @Override
-       public void onTextChanged(CharSequence s, int start, int before, int count) {
-           editText.setVisibility(View.VISIBLE);
+    @Override
+    public void onTextChanged(CharSequence s, int start, int before, int count) {
+
+    }
+
+    @Override
+    public void afterTextChanged(Editable s) {
+        if (s.length() == 0) {
+            //do nothing
+        } else {
+
+            //need to put this inside of an asynch task
+//            String mArtistName = editText.getText().toString();
+//            SpotifyService spotify = api.getService();
+//            ArtistsPager results = spotify.searchArtists(mArtistName);
+//            Log.d(LOG_TAG, results.toString());
+
+            fetchArtistTask.execute("Metallica");
+
+        }
+    }
+
+    public class FetchArtistTask extends AsyncTask<String,Void,ArtistsPager> {
 
 
-       }
-       @Override
-       public void afterTextChanged(Editable s) {
-           if (s.length() == 0) {
-               //do nothing
-           } else{
-               String mArtistName = editText.getText().toString();
-               Log.d(LOG_TAG,mArtistName);
-
-           }
-       }
-   };
 
 
+        public void FetchArtistTask(){
 
-      //  return false;
-    //}
+        }
+
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            spotify = api.getService();
+
+        }
+
+
+
+        @Override
+        protected ArtistsPager doInBackground(String... params) {
+
+
+
+            //remove hardcoded and pass to asycnch
+            String mArtistName = "Beyonce";
+
+                    //String mArtistName = editText.getText().toString();
+
+            ArtistsPager results = spotify.searchArtists(mArtistName);
+            Log.d(LOG_TAG, "doing in background...");
+
+
+
+
+                //Get the data from the server and return it
+                return results;
+
+
+        }
+
+        @Override
+        protected void onPostExecute(ArtistsPager artistsResults) {
+            super.onPostExecute(artistsResults);
+
+            mArtistAdapter.clear();
+
+            //convert to string
+            //mArtistAdapter.addAll(artistsResults);
+
+            Log.d(LOG_TAG, "artist:" + artistsResults);
+
+            //mForecastAdapter.notifyDataSetChanged();
+
+        }
+
+
+
+    }
+
 }
