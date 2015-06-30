@@ -24,6 +24,7 @@ import java.util.List;
 
 import kaaes.spotify.webapi.android.SpotifyApi;
 import kaaes.spotify.webapi.android.SpotifyService;
+import kaaes.spotify.webapi.android.models.Artist;
 import kaaes.spotify.webapi.android.models.ArtistsPager;
 
 
@@ -142,9 +143,7 @@ public class MainActivityFragment extends Fragment implements TextView.OnEditorA
 
 
             //remove hardcoded and pass to asycnch
-            String mArtistName = "Beyonce";
-
-                    //String mArtistName = editText.getText().toString();
+            String mArtistName = params[0];
 
             ArtistsPager results = spotify.searchArtists(mArtistName);
             Log.d(LOG_TAG, "doing in background...");
@@ -164,10 +163,15 @@ public class MainActivityFragment extends Fragment implements TextView.OnEditorA
 
             mArtistAdapter.clear();
 
-            //convert to string
-            //mArtistAdapter.addAll(artistsResults);
+            List<Artist> listOfArtists = artistsResults.artists.items;
+            for(Artist element : listOfArtists) {
+                String name = element.name;
+                mArtistAdapter.add(name);
+                Log.d(LOG_TAG, name);
+            }
 
-            Log.d(LOG_TAG, "artist:" + artistsResults.artists);
+
+            Log.d(LOG_TAG, "Adapter updated.");
 
             //mForecastAdapter.notifyDataSetChanged();
 
