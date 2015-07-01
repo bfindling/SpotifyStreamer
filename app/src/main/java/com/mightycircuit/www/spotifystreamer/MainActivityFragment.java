@@ -34,6 +34,9 @@ import kaaes.spotify.webapi.android.models.ArtistsPager;
 public class MainActivityFragment extends Fragment implements TextView.OnEditorActionListener {
     public static final String LOG_TAG = "SpotifyStreamer";
     public ArrayAdapter<String> mArtistAdapter;
+
+    //custom arrayadapter
+    private ArtistAdapter artistAdapter;
     private EditText editText;
     public FetchArtistTask fetchArtistTask;
     public SpotifyApi api;
@@ -47,6 +50,16 @@ public class MainActivityFragment extends Fragment implements TextView.OnEditorA
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setHasOptionsMenu(true);
+
+        //custom arrayadapter
+
+        ArtistAdapter[] artistTemporary = {
+                new ArtistAdapter(5,"Beyonce"),
+                new ArtistAdapter(3,"Metallica")
+        };
+
+
+
         fetchArtistTask = new FetchArtistTask();
         // fetchWeatherTask.execute("91364");
 
@@ -57,15 +70,13 @@ public class MainActivityFragment extends Fragment implements TextView.OnEditorA
 
         // Create some dummy data for the ListView.  Here's a sample weekly forecast
         String[] data = {
-                "Mon 0/0",
-                "Tue 0/0",
-                "Wed 0/0",
-                "Thurs 0/0",
-                "Fri 0/0",
-                "Sat 0/0",
-                "Sun 0/0"
+                "0",
+                "1"
         };
         mTemporary = new ArrayList<String>(Arrays.asList(data));
+
+
+      //artistAdapter = new ArtistAdapter(getActivity(), Arrays.asList((artistTemporary));
 
 
         // Now that we have some dummy forecast data, create an ArrayAdapter.
