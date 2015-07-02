@@ -8,6 +8,7 @@ import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ListView;
@@ -26,7 +27,7 @@ import kaaes.spotify.webapi.android.models.ArtistsPager;
 /**
  * A placeholder fragment containing a simple view.
  */
-public class MainActivityFragment extends Fragment implements TextView.OnEditorActionListener {
+public class MainActivityFragment extends Fragment implements TextView.OnEditorActionListener, AdapterView.OnItemClickListener {
     public static final String LOG_TAG = "SpotifyStreamer";
     public ArrayAdapter<String> mArtistAdapter;
 
@@ -96,6 +97,7 @@ public class MainActivityFragment extends Fragment implements TextView.OnEditorA
         // Get a reference to the ListView, and attach this adapter to it.
         ListView listView = (ListView) rootView.findViewById(R.id.listview_artist);
         listView.setAdapter(artistCustomAdapter);
+        listView.setOnItemClickListener(this);
 
         //setup spotify wrapper api
         api = new SpotifyApi();
@@ -131,6 +133,17 @@ public class MainActivityFragment extends Fragment implements TextView.OnEditorA
 
 
         return false;
+    }
+
+    @Override
+    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+//        ItemFragment mySecondFragment = new ItemFragment();
+//
+//        getFragmentManager().beginTransaction()
+//                .replace(R.id.fragment, mySecondFragment)
+//                .addToBackStack(null)
+//                .commit();
+
     }
 
 

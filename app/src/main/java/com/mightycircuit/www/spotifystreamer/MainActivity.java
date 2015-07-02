@@ -13,14 +13,14 @@ public class MainActivity extends ActionBarActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        /* Do I need this?
-        if (savedInstanceState == null) {
-            getSupportFragmentManager().beginTransaction()
-                    .add(R.id.fragment, new MainActivityFragment())
-                    .commit();
+        // Do I need this?
+//        if (savedInstanceState == null) {
+//            getSupportFragmentManager().beginTransaction()
+//                    .add(R.id.fragment, new MainActivityFragment())
+//                    .commit();
+//
+//        }
 
-        }
-    */
     }
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
