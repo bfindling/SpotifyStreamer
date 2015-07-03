@@ -43,11 +43,6 @@ public class MainActivityFragment extends Fragment implements TextView.OnEditorA
     public List<String> mTemporary;
 
     public List<ArtistAdapter> artists;
-//    public ArtistAdapter[] artists = {
-//            new ArtistAdapter(R.drawable.null_person,"Billy Joel"),
-//            new ArtistAdapter(R.drawable.donut,"The Simpsons"),
-//    };
-
 
     public MainActivityFragment() {
     }
@@ -57,39 +52,24 @@ public class MainActivityFragment extends Fragment implements TextView.OnEditorA
         super.onCreate(savedInstanceState);
         setHasOptionsMenu(true);
 
+        artists = new ArrayList<ArtistAdapter>();
 
-        // fetchArtistTask = new FetchArtistTask();
+        ArtistAdapter adapterElement = new ArtistAdapter("a", "Artist");
+        artists.add(adapterElement);
+        artistCustomAdapter = new ArtistCustomAdapter(getActivity(), artists);
 
-
+        //setup spotify wrapper api
+        api = new SpotifyApi();
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        //mTemporary = new ArrayList<String>(Arrays.asList(data));
-        artists = new ArrayList<ArtistAdapter>();
 
-        ArtistAdapter adapterElement = new ArtistAdapter("a", "Artist");
-        artists.add(adapterElement);
-
-        // Now that we have some dummy forecast data, create an ArrayAdapter.
-        // The ArrayAdapter will take data from a source (like our dummy forecast) and
-        // use it to populate the ListView it's attached to.
-//        mArtistAdapter =
-//                new ArrayAdapter<String>(
-//                        getActivity(), // The current context (this activity)
-//                        R.layout.list_item_artist, // The name of the layout ID.
-//                        R.id.list_item_artist_textview, // The ID of the textview to populate.
-//                        mTemporary);
 
 
         View rootView = inflater.inflate(R.layout.fragment_main, container, false);
 
-        //artistCustomAdapter = new ArtistCustomAdapter(getActivity(), Arrays.asList(artists));
-        artistCustomAdapter = new ArtistCustomAdapter(getActivity(), artists);
-
-
-        Log.d(LOG_TAG, "setAdapter");
         // Get a ref to the editText and set a listener to it
         editText = (EditText) rootView.findViewById(R.id.editText);
         editText.setOnEditorActionListener(this);
@@ -99,8 +79,7 @@ public class MainActivityFragment extends Fragment implements TextView.OnEditorA
         listView.setAdapter(artistCustomAdapter);
         listView.setOnItemClickListener(this);
 
-        //setup spotify wrapper api
-        api = new SpotifyApi();
+
 
 
         return rootView;
@@ -137,12 +116,12 @@ public class MainActivityFragment extends Fragment implements TextView.OnEditorA
 
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-//        ItemFragment mySecondFragment = new ItemFragment();
-//
-//        getFragmentManager().beginTransaction()
-//                .replace(R.id.fragment, mySecondFragment)
-//                .addToBackStack(null)
-//                .commit();
+        ItemFragment itemFragment = new ItemFragment();
+
+        getFragmentManager().beginTransaction()
+                .replace(R.id.fragment, itemFragment)
+                .addToBackStack(null)
+                .commit();
 
     }
 
