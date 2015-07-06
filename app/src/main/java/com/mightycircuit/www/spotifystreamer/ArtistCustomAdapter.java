@@ -14,19 +14,16 @@ import com.squareup.picasso.Picasso;
 
 import java.util.List;
 
-import kaaes.spotify.webapi.android.models.Artist;
-import kaaes.spotify.webapi.android.models.Image;
-
 /**
  * Created by brian on 6/30/15.
  */
-public class ArtistCustomAdapter extends ArrayAdapter<ArtistAdapter> {
+public class ArtistCustomAdapter extends ArrayAdapter<ElementAdapter> {
     public static final String LOG_TAG = "SpotifyStreamer";
     private Context context;
     //private List<Artist> artists;
-    private List<ArtistAdapter> artistNames;
+    private List<ElementAdapter> artistNames;
 
-    public ArtistCustomAdapter(Activity context, List<ArtistAdapter> artistNames) {
+    public ArtistCustomAdapter(Activity context, List<ElementAdapter> artistNames) {
         super(context, 0 , artistNames);
         this.context= context;
         this.artistNames=artistNames;
@@ -34,7 +31,7 @@ public class ArtistCustomAdapter extends ArrayAdapter<ArtistAdapter> {
     @Override
     public View getView(int position,View convertView, ViewGroup parent){
 
-        ArtistAdapter artistPosition = getItem(position);
+        ElementAdapter artistPosition = getItem(position);
         Log.d(LOG_TAG, "Position: "+ position + " artist name: " + artistPosition.artist);
 
         // Adapters recycle views to AdapterViews.
@@ -47,9 +44,6 @@ public class ArtistCustomAdapter extends ArrayAdapter<ArtistAdapter> {
         }
 
         ImageView iconView = (ImageView) convertView.findViewById(R.id.artist_icon_view);
-        //iconView.setImageResource(artistPosition.image);
-       // Picasso.with(context).load(artist.images.get(0).url).into(artistIcon);
-
 
         Picasso.with(context).load(artistPosition.image).resize(300, 300).into(iconView);
 
@@ -60,28 +54,6 @@ public class ArtistCustomAdapter extends ArrayAdapter<ArtistAdapter> {
         return convertView;
 
 
-
-
-
-
-
-       //This is eventually going to become the final code minus errors---------
-        //ArtistAdapter artistAdapter = getItem(position);
-//        Artist artist = artists.get(position);
-//        Image image = new Image();
-//        String url = null;
-//        List<Image> images = artist.images;
-//        View rootView = LayoutInflater.from(getContext()).inflate(R.layout.list_item_artist, parent, false);
-//        ImageView artistIcon =(ImageView) rootView.findViewById(R.id.artist_icon);
-//       // Picasso.with(context).load(artist.images.get(0).url).into(artistIcon);
-//        if (images != null && !images.isEmpty()) {
-//            url = images.get(0).url;
-//        }
-//        Picasso.with(context).load(url).into(artistIcon);
-//        TextView artistName = (TextView) rootView.findViewById(R.id.listview_artists);
-//        artistName.setText(artist.name);
-
-//        return rootView;
     }
 
 }

@@ -5,9 +5,11 @@ import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 
+import java.util.List;
+
 
 public class MainActivity extends ActionBarActivity implements ItemFragment.OnFragmentInteractionListener {
-
+    List<ElementAdapter> placeholder;
     String id;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -26,9 +28,11 @@ public class MainActivity extends ActionBarActivity implements ItemFragment.OnFr
     }
 
     @Override
-    public void onFragmentInteraction(String id){
+    public void onFragmentInteraction(int id){
 
         //TODO: pass the item id to the new frag
+        ItemFragment Obj=(ItemFragment) getSupportFragmentManager().findFragmentById(R.id.fragmentTracks);
+        Obj.setTrackList(placeholder);
     };
 
 
