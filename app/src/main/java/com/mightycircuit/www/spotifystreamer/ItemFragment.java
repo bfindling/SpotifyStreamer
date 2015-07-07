@@ -1,9 +1,10 @@
 package com.mightycircuit.www.spotifystreamer;
 
 import android.app.Activity;
+import android.app.Fragment;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
+
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -38,6 +39,7 @@ import kaaes.spotify.webapi.android.models.TracksPager;
  */
 public class ItemFragment extends Fragment implements AbsListView.OnItemClickListener {
     public static final String LOG_TAG = "SpotifyStreamer";
+    final static String DATA_RECEIVE = "data_receive";
 
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -98,21 +100,33 @@ public class ItemFragment extends Fragment implements AbsListView.OnItemClickLis
             mParam2 = getArguments().getString(ARG_PARAM2);
         }
 
+        //hmmmm....
+        //Bundle args = getArguments();
+        //if (args != null) {
+
+        Bundle args = getArguments();
+            String selectedName=args.getString(DATA_RECEIVE);
+        //} else {
+
+         //String selectedName="Slayer";
+        //}
+
+
         tracks = new ArrayList<ElementAdapter>();
 
+        //temporary for debuggin
         ElementAdapter adapterElement = new ElementAdapter("a", "Artist 1");
         tracks.add(adapterElement);
-
-
-        //temporary for debuggin
         adapterElement = new ElementAdapter("b", "Artist 2");
         tracks.add(adapterElement);
-
-
-
         trackCustomAdapter = new ArtistCustomAdapter(getActivity(), tracks);
 
+        //setup spotify wrapper api
+        api = new SpotifyApi();
 
+        fetchTracksTask = new FetchTracksTask();
+        //fetchTracksTask.execute(artistsCheatGrab.get(position).name.toString());
+        fetchTracksTask.execute(selectedName);
 
         // TODO: Change Adapter to display your content
 //        mAdapter = new ArrayAdapter<DummyContent.DummyItem>(getActivity(),
@@ -145,6 +159,9 @@ public class ItemFragment extends Fragment implements AbsListView.OnItemClickLis
     @Override
     public void onAttach(Activity activity) {
         super.onAttach(activity);
+
+
+
         try {
             mListener = (OnFragmentInteractionListener) activity;
         } catch (ClassCastException e) {
@@ -165,12 +182,11 @@ public class ItemFragment extends Fragment implements AbsListView.OnItemClickLis
             // Notify the active callbacks interface (the activity, if the
             // fragment is attached to one) that an item has been selected.
             mListener.onFragmentInteraction(position);
-
-            fetchTracksTask = new FetchTracksTask();
-            //fetchTracksTask.execute(artistsCheatGrab.get(position).name.toString());
-            fetchTracksTask.execute("beyonce");
-            //Log.d(LOG_TAG, "selected:  " + artistsCheatGrab.get(position).name.toString());
         }
+
+
+
+
     }
 
     /**
