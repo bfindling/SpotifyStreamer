@@ -34,6 +34,8 @@ import kaaes.spotify.webapi.android.models.TracksPager;
 public class MainActivityFragment extends Fragment implements TextView.OnEditorActionListener, AdapterView.OnItemClickListener {
     public static final String LOG_TAG = "SpotifyStreamer";
 
+    //make this static so i can access it from multiple frags
+    //is this bad design?
     public DataPassListener mCallback;
 
     private ArtistCustomAdapter artistCustomAdapter;
@@ -42,16 +44,10 @@ public class MainActivityFragment extends Fragment implements TextView.OnEditorA
     private List<ElementAdapter> artists;   //the raw list of artists
     private List<String> artistNamesList; //the final list
 
-    //temp for debugging
-    private List<Artist> artistsCheatGrab;
-
-
     private SpotifyApi api;
     private SpotifyService spotify;
 
     private ListView listView;
-
-
 
     public MainActivityFragment() {
     }
@@ -97,9 +93,9 @@ public class MainActivityFragment extends Fragment implements TextView.OnEditorA
 
     //mainActivity implements this to receive the artist name and pass it to the
     // second fragment (top 10 trask list)
-    public interface DataPassListener {
-        public void passData(String selectedArtist);
-    }
+//    public interface DataPassListener {
+//        public void passData(String selectedArtist);
+//    }
 
     @Override
     public void onAttach(Activity activity) {
@@ -143,11 +139,11 @@ public class MainActivityFragment extends Fragment implements TextView.OnEditorA
 
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-//        ItemFragment itemFragment = new ItemFragment();
+        ItemFragment itemFragment = new ItemFragment();
 
         //pass the selected artist name to the mainActivity and
         //trigger the second fragment to launch
-        mCallback.passData(getArtistList().get(position));
+        mCallback.passData(getArtistList().get(position), itemFragment);
 
 
        // moved this to main activity
@@ -161,6 +157,10 @@ public class MainActivityFragment extends Fragment implements TextView.OnEditorA
 
     }
 
+    //crap maybe implement later!! why is it sooo complicated to simply pass data frag -frag!!!
+    public void setDataPassListener(DataPassListener callBack){
+        this.mCallback=callBack;
+    }
     private void setArtistList (String vName){
         //set the search results of just the names field for access by the click listener
         this.artistNamesList.add(vName);
@@ -222,12 +222,6 @@ public class MainActivityFragment extends Fragment implements TextView.OnEditorA
             //extract just the 20 artists and pics
             List<Artist> listOfArtists = artistsResults.artists.items;
 
-
-
-            //temp for debugging... del me!!!!!!!!!!!!!!!!!!!!
-            artistsCheatGrab = listOfArtists;
-
-            //!!!!!!!!!!!!
 
 
             Log.d(LOG_TAG, "Artist results size=" + listOfArtists.size());

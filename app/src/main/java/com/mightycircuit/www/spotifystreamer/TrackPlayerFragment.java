@@ -12,6 +12,8 @@ import android.os.IBinder;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
+
 import com.mightycircuit.www.spotifystreamer.MusicService.MusicBinder;
 
 
@@ -37,7 +39,7 @@ public class TrackPlayerFragment extends Fragment {
     private Intent playIntent;
     private boolean musicBound=false;
 
-
+    public DataPassListener mCallback;
     private OnFragmentInteractionListener mListener;
 
     /**
@@ -68,10 +70,14 @@ public class TrackPlayerFragment extends Fragment {
         if (getArguments() != null) {
             mParam1 = getArguments().getString(ARG_PARAM1);
             mParam2 = getArguments().getString(ARG_PARAM2);
-
-
-
         }
+
+        //get data from main activity
+        Bundle args = getArguments();
+        String trackUrl=args.getString(DataPassListener.DATA_RECEIVE);
+
+
+        Toast.makeText(getActivity(), "url:" + trackUrl, Toast.LENGTH_SHORT).show();
     }
 
 
@@ -93,10 +99,10 @@ public class TrackPlayerFragment extends Fragment {
     public void onAttach(Activity activity) {
         super.onAttach(activity);
         try {
-            mListener = (OnFragmentInteractionListener) activity;
+            mCallback = (DataPassListener) activity;
         } catch (ClassCastException e) {
             throw new ClassCastException(activity.toString()
-                    + " must implement OnFragmentInteractionListener");
+                    + " must implement DataPassListener");
         }
 
 

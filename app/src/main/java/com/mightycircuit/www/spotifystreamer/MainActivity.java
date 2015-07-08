@@ -1,28 +1,28 @@
 package com.mightycircuit.www.spotifystreamer;
 
+import android.app.Fragment;
+import android.app.FragmentManager;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
-import android.content.ServiceConnection;
-import android.os.IBinder;
+
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.Menu;
 import android.view.MenuItem;
-import com.mightycircuit.www.spotifystreamer.MusicService.MusicBinder;
+
 
 
 import java.util.List;
 
 //ActionBarActivity deprecated so used AppCompatActivity instead....
-public class MainActivity extends AppCompatActivity implements ItemFragment.OnFragmentInteractionListener, MainActivityFragment.DataPassListener {
+//public class MainActivity extends AppCompatActivity implements ItemFragment.OnFragmentInteractionListener, DataPassListener {
+    public class MainActivity extends AppCompatActivity implements DataPassListener {
     List<ElementAdapter> placeholder;
     String id;
 
-    private MusicService musicSrv;
-    private Intent playIntent;
-    private boolean musicBound=false;
+    public DataPassListener mCallback;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -38,14 +38,16 @@ public class MainActivity extends AppCompatActivity implements ItemFragment.OnFr
         }
 
     }
-
-    @Override
-    public void onFragmentInteraction(int id){
-
-        //TODO: pass the item id to the new frag
-//        ItemFragment Obj=(ItemFragment) getSupportFragmentManager().findFragmentById(R.id.fragmentTracks);
-//        Obj.setTrackList(placeholder);
-    };
+//
+//    @Override
+//    public void onFragmentInteraction(int id){
+//
+//        //TODO: pass the item id to the new frag
+////        ItemFragment Obj=(ItemFragment) getSupportFragmentManager().findFragmentById(R.id.fragmentTracks);
+////        Obj.setTrackList(placeholder);
+//
+//
+//    };
 
 
     @Override
@@ -69,48 +71,42 @@ public class MainActivity extends AppCompatActivity implements ItemFragment.OnFr
 
         return super.onOptionsItemSelected(item);
     }
+//    getSupportFragmentManager().addOnBackStackChangedListener(
+//            new FragmentManager.OnBackStackChangedListener() {
+//        public void onBackStackChanged() {
+//            // Update your UI here.
+//        }
+//    });
+
 
     @Override
-    public void passData(String selectedArtist) {
-        ItemFragment itemFragment = new ItemFragment();
+    public void passData(String selectedArtist, Fragment fragment) {
+
 
         //http://stackoverflow.com/questions/16036572/how-to-pass-values-between-fragments
 
         Bundle args = new Bundle();
-        args.putString(itemFragment.DATA_RECEIVE, selectedArtist);
-        itemFragment .setArguments(args);
+        args.putString(DataPassListener.DATA_RECEIVE, selectedArtist);
+        fragment .setArguments(args);
 
         getFragmentManager().beginTransaction()
-                .add(R.id.fragmentMain, itemFragment)
+                .add(R.id.fragment, fragment)
                 .addToBackStack(null)
                 .commit();
-    }
-    //connect to the service
-    private ServiceConnection musicConnection = new ServiceConnection(){
 
-        @Override
-        public void onServiceConnected(ComponentName name, IBinder service) {
-            MusicBinder binder = (MusicBinder)service;
-            //get service
-            musicSrv = binder.getService();
-            //pass list
-            //musicSrv.setList(songList);
-            musicBound = true;
-        }
 
-        @Override
-        public void onServiceDisconnected(ComponentName name) {
-            musicBound = false;
-        }
-    };
-    @Override
-    protected void onStart() {
-        super.onStart();
-        if(playIntent==null){
-            playIntent = new Intent(this, MusicService.class);
-            bindService(playIntent, musicConnection, Context.BIND_AUTO_CREATE);
-            startService(playIntent);
-        }
+//        ItemFragment itemFragment = new ItemFragment();
+//        Bundle args = new Bundle();
+//        args.putString(itemFragment.DATA_RECEIVE, selectedArtist);
+//        itemFragment .setArguments(args);
+//
+//        getFragmentManager().beginTransaction()
+//                .add(R.id.fragment, itemFragment)
+//                .addToBackStack(null)
+//                .commit();
+
+
     }
+
 
 }

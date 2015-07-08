@@ -11,14 +11,11 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AbsListView;
 import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ListAdapter;
 import android.widget.ListView;
-import android.widget.TextView;
+import android.widget.Toast;
 
-
-import com.mightycircuit.www.spotifystreamer.dummy.DummyContent;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -39,7 +36,7 @@ import kaaes.spotify.webapi.android.models.TracksPager;
  */
 public class ItemFragment extends Fragment implements AbsListView.OnItemClickListener {
     public static final String LOG_TAG = "SpotifyStreamer";
-    final static String DATA_RECEIVE = "data_receive";
+    //final static String DATA_RECEIVE = "data_receive";
 
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -54,7 +51,10 @@ public class ItemFragment extends Fragment implements AbsListView.OnItemClickLis
     private ArtistCustomAdapter trackCustomAdapter;
     private EditText editText;
     private FetchTracksTask fetchTracksTask;
-    private List<ElementAdapter> tracks;
+    private List<ElementAdapter> tracks;    //the raw list of tracks
+    private List<String> trackNamesList; //the final list or preview tracks
+
+    public DataPassListener mCallback;
 
     private ListView listView;
 
@@ -105,13 +105,13 @@ public class ItemFragment extends Fragment implements AbsListView.OnItemClickLis
         //if (args != null) {
 
         Bundle args = getArguments();
-            String selectedName=args.getString(DATA_RECEIVE);
+            String selectedName=args.getString(DataPassListener.DATA_RECEIVE);
         //} else {
 
          //String selectedName="Slayer";
         //}
 
-
+        trackNamesList=new ArrayList<String>();
         tracks = new ArrayList<ElementAdapter>();
 
         //temporary for debuggin
@@ -163,10 +163,10 @@ public class ItemFragment extends Fragment implements AbsListView.OnItemClickLis
 
 
         try {
-            mListener = (OnFragmentInteractionListener) activity;
+            mCallback = (DataPassListener) activity;
         } catch (ClassCastException e) {
             throw new ClassCastException(activity.toString()
-                    + " must implement OnFragmentInteractionListener");
+                    + " must implement OnFragmentInteractionListener-oye vey");
         }
     }
 
@@ -184,27 +184,32 @@ public class ItemFragment extends Fragment implements AbsListView.OnItemClickLis
             mListener.onFragmentInteraction(position);
         }
 
+        TrackPlayerFragment itemFragment = new TrackPlayerFragment();
 
+        //pass the selected artist name to the mainActivity and
+        //trigger the second fragment to launch
+
+      //change to getTrackNamesList
+        mCallback.passData(trackNamesList.get(position), itemFragment);
+
+        //mCallback.passData("test", itemFragment);
+
+
+        //Toast.makeText(getActivity(), "url:" + trackNamesList.get(position), Toast.LENGTH_SHORT).show();
 
 
     }
 
-    /**
-     * The default content for this Fragment has a TextView that is shown when
-     * the list is empty. If you would like to change the text, call this method
-     * to supply the text it should use.Artis
-     */
-    public void setTrackList(List<ElementAdapter> tracks) {
 
 
-        //TODO: update adapter with the track list
+    private void setTracksList(String vName){
+        //set the search results of just the names field for access by the click listener
+        this.trackNamesList.add(vName);
+    }
 
-        //delete this template
-//        View emptyView = mListView.getEmptyView();
-//
-//        if (emptyView instanceof TextView) {
-//            ((TextView) emptyView).setText(emptyText);
-//        }
+    private List<String> getTracksList(){
+        //get the artist names list
+        return this.trackNamesList;
     }
 
     /**
@@ -301,7 +306,8 @@ public class ItemFragment extends Fragment implements AbsListView.OnItemClickLis
                 } else {
                     imageUrl = element.album.images.get(IMAGE_SIZE_INDEX).url;
                 }
-
+                //pass the track URL to a field to be shared with listener
+                setTracksList(element.preview_url);
 
                 //mArtistAdapter.add(name);
                 ElementAdapter adapterElement = new ElementAdapter(imageUrl, trackName);
