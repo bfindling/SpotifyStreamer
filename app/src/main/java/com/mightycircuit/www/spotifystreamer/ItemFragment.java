@@ -14,7 +14,6 @@ import android.widget.AdapterView;
 import android.widget.EditText;
 import android.widget.ListAdapter;
 import android.widget.ListView;
-import android.widget.Toast;
 
 
 import java.util.ArrayList;
@@ -53,6 +52,8 @@ public class ItemFragment extends Fragment implements AbsListView.OnItemClickLis
     private FetchTracksTask fetchTracksTask;
     private List<ElementAdapter> tracks;    //the raw list of tracks
     private List<String> trackNamesList; //the final list or preview tracks
+
+    private List<String> albumImageList;
 
     public DataPassListener mCallback;
 
@@ -111,8 +112,9 @@ public class ItemFragment extends Fragment implements AbsListView.OnItemClickLis
          //String selectedName="Slayer";
         //}
 
-        trackNamesList=new ArrayList<String>();
-        tracks = new ArrayList<ElementAdapter>();
+        trackNamesList=new ArrayList<>();
+        tracks = new ArrayList<>();
+        albumImageList = new ArrayList<>();
 
         //temporary for debuggin
         ElementAdapter adapterElement = new ElementAdapter("a", "Artist 1");
@@ -189,8 +191,9 @@ public class ItemFragment extends Fragment implements AbsListView.OnItemClickLis
         //pass the selected artist name to the mainActivity and
         //trigger the second fragment to launch
 
+
       //change to getTrackNamesList
-        mCallback.passData(trackNamesList.get(position), itemFragment);
+        mCallback.passDataImage(albumImageList.get(position), trackNamesList.get(position), itemFragment);
 
         //mCallback.passData("test", itemFragment);
 
@@ -206,7 +209,10 @@ public class ItemFragment extends Fragment implements AbsListView.OnItemClickLis
         //set the search results of just the names field for access by the click listener
         this.trackNamesList.add(vName);
     }
+    private void setImageList(String vName){
+        this.albumImageList.add(vName);
 
+    }
     private List<String> getTracksList(){
         //get the artist names list
         return this.trackNamesList;
@@ -277,6 +283,7 @@ public class ItemFragment extends Fragment implements AbsListView.OnItemClickLis
 
             trackCustomAdapter.clear();
 
+            //!
             List<Track> topTracks = tracksResults.tracks.items;
 
             Log.d(LOG_TAG, "Artist results size=" + topTracks.size());
@@ -305,6 +312,7 @@ public class ItemFragment extends Fragment implements AbsListView.OnItemClickLis
 
                 } else {
                     imageUrl = element.album.images.get(IMAGE_SIZE_INDEX).url;
+                    setImageList(imageUrl);
                 }
                 //pass the track URL to a field to be shared with listener
                 setTracksList(element.preview_url);

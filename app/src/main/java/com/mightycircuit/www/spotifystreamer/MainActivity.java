@@ -6,6 +6,7 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 
+import android.media.Image;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
@@ -13,6 +14,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 
 
+import com.squareup.picasso.Picasso;
 
 import java.util.List;
 
@@ -93,20 +95,21 @@ import java.util.List;
                 .add(R.id.fragment, fragment)
                 .addToBackStack(null)
                 .commit();
-
-
-//        ItemFragment itemFragment = new ItemFragment();
-//        Bundle args = new Bundle();
-//        args.putString(itemFragment.DATA_RECEIVE, selectedArtist);
-//        itemFragment .setArguments(args);
-//
-//        getFragmentManager().beginTransaction()
-//                .add(R.id.fragment, itemFragment)
-//                .addToBackStack(null)
-//                .commit();
-
-
     }
 
 
+    @Override
+    public void passDataImage(String image, String selectedArtist, Fragment fragment) {
+
+        Bundle args = new Bundle();
+        args.putString(DataPassListener.DATA_RECEIVE, selectedArtist);
+        args.putString(DataPassListener.IMAGE_RECEIVE, image);
+        fragment .setArguments(args);
+
+        getFragmentManager().beginTransaction()
+                .add(R.id.fragment, fragment)
+                .addToBackStack(null)
+                .commit();
+
+    }
 }
