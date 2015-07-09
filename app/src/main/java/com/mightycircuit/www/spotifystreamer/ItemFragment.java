@@ -324,12 +324,9 @@ public class ItemFragment extends Fragment implements AbsListView.OnItemClickLis
 
                 Log.d(LOG_TAG, "track added to list:" + trackName);
             }
-            //effectively hide the stupid keyboard after listView is populated
-            listView.requestFocus();
 
             Log.d(LOG_TAG, "Adapter updated.");
 
-            //mForecastAdapter.notifyDataSetChanged();
 
         }
 

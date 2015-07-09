@@ -16,6 +16,7 @@ import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
 
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -33,9 +34,17 @@ import kaaes.spotify.webapi.android.models.TracksPager;
  */
 public class MainActivityFragment extends Fragment implements TextView.OnEditorActionListener, AdapterView.OnItemClickListener {
     public static final String LOG_TAG = "SpotifyStreamer";
+    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
+    private static final String ARG_PARAM1 = "param1";
+    private static final String ARG_PARAM2 = "param2";
+    private static final String PARCLE_SAVE_KEY = "PARCEL_SAVE_KEY";
 
-    //make this static so i can access it from multiple frags
-    //is this bad design?
+    private static final String KEY_ARTISTS = "artist";
+    private static final String KEY_IMAGES = "images";
+
+    // TODO: Rename and change types of parameters
+
+
     public DataPassListener mCallback;
 
     private ArtistCustomAdapter artistCustomAdapter;
@@ -43,6 +52,9 @@ public class MainActivityFragment extends Fragment implements TextView.OnEditorA
     private FetchArtistTask fetchArtistTask;
     private List<ElementAdapter> artists;   //the raw list of artists
     private List<String> artistNamesList; //the final list
+    private List<String> artistImagesList; //the final list
+
+    private ArrayList<ParcelBag> mParcel;    // the parcel list
 
     private SpotifyApi api;
     private SpotifyService spotify;
@@ -56,19 +68,41 @@ public class MainActivityFragment extends Fragment implements TextView.OnEditorA
     public void onCreate(Bundle savedInstanceState) {
 
         super.onCreate(savedInstanceState);
-        Log.d(LOG_TAG, "MainActivityFragment onCreate");
+        Log.d(LOG_TAG, "MainActivijava.lang.StringtyFragment onCreate");
 
         setHasOptionsMenu(true);
 
-        artists = new ArrayList<ElementAdapter>();
-        artistNamesList=new ArrayList<String>();
+        artists = new ArrayList<>();
+        artistNamesList = new ArrayList<>();
 
-        ElementAdapter adapterElement = new ElementAdapter("a", "Artist");
-        artists.add(adapterElement);
-        artistCustomAdapter = new ArtistCustomAdapter(getActivity(), artists);
+        artistCustomAdapter = new ArtistCustomAdapter(getActivity());
 
-        //setup spotify wrapper api
-        api = new SpotifyApi();
+        if (savedInstanceState != null) {
+            // read the  list from the saved state
+            artistNamesList = savedInstanceState.getParcelableArrayList(PARCLE_SAVE_KEY);
+            ElementAdapter adapterElement = new ElementAdapter("a", "Artist");
+
+
+            //setup spotify wrapper api
+            api = new SpotifyApi();
+        } else {
+            //artistNamesList=new ArrayList<String>();
+            artists.add(adapterElement);
+            artistCustomAdapter = new ArtistCustomAdapter(getActivity(), artists);
+        }
+
+//        if (getArguments() == null) {
+//            ElementAdapter adapterElement = new ElementAdapter("a", "Artist");
+//            artists.add(adapterElement);
+//            artistCustomAdapter = new ArtistCustomAdapter(getActivity(), artists);
+//
+//            //setup spotify wrapper api
+//            api = new SpotifyApi();
+//        } else {
+//            //artistNamesList=new ArrayList<String>();
+//            mParcel = savedInstanceState.getParcelableArrayList(PARCLE_SAVE_KEY);
+//        }
+
     }
 
     @Override
@@ -112,6 +146,12 @@ public class MainActivityFragment extends Fragment implements TextView.OnEditorA
     }
 
     @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putParcelableArrayList(PARCLE_SAVE_KEY, mParcel);
+    }
+
+    @Override
     public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
 
         Log.d(LOG_TAG, "Search for: " + editText.getText().toString());
@@ -119,8 +159,6 @@ public class MainActivityFragment extends Fragment implements TextView.OnEditorA
         InputMethodManager imm = (InputMethodManager) getActivity().getSystemService(
                 Context.INPUT_METHOD_SERVICE);
         imm.hideSoftInputFromWindow(v.getWindowToken(), 0);
-
-
 
 
         if (fetchArtistTask == null) {
@@ -145,28 +183,18 @@ public class MainActivityFragment extends Fragment implements TextView.OnEditorA
         //trigger the second fragment to launch
         mCallback.passData(getArtistList().get(position), itemFragment);
 
-
-       // moved this to main activity
-//        getFragmentManager().beginTransaction()
-//                .replace(R.id.fragment, itemFragment)
-//                .addToBackStack(null)
-//                .commit();
-
-
-
-
     }
 
-    //crap maybe implement later!! why is it sooo complicated to simply pass data frag -frag!!!
-    public void setDataPassListener(DataPassListener callBack){
-        this.mCallback=callBack;
-    }
-    private void setArtistList (String vName){
+
+    //    public void setDataPassListener(DataPassListener callBack){
+//        this.mCallback=callBack;
+//    }
+    private void setArtistList(String vName) {
         //set the search results of just the names field for access by the click listener
         this.artistNamesList.add(vName);
     }
 
-    private List<String> getArtistList(){
+    private List<String> getArtistList() {
         //get the artist names list
         return this.artistNamesList;
     }
@@ -223,7 +251,6 @@ public class MainActivityFragment extends Fragment implements TextView.OnEditorA
             List<Artist> listOfArtists = artistsResults.artists.items;
 
 
-
             Log.d(LOG_TAG, "Artist results size=" + listOfArtists.size());
 
             for (Artist element : listOfArtists) {
@@ -260,10 +287,8 @@ public class MainActivityFragment extends Fragment implements TextView.OnEditorA
                     imageUrl = element.images.get(IMAGE_SIZE_INDEX).url;
                 }
 
-
-                //mArtistAdapter.add(name);
-                ElementAdapter adapterElement = new ElementAdapter(imageUrl, name);
-                artists.add(adapterElement);
+                //add to the adapter
+                adapterUpdate(imageUrl, name);
 
 
                 Log.d(LOG_TAG, "Artist added to list:" + name);
@@ -278,9 +303,14 @@ public class MainActivityFragment extends Fragment implements TextView.OnEditorA
         }
 
 
-
     }
 
+    private void adapterUpdate(String vImage, String vName) {
+        //mArtistAdapter.add(name);
+        ElementAdapter adapterElement = new ElementAdapter(vImage, vName);
+        artists.add(adapterElement);
+
+    }
 
 
 }

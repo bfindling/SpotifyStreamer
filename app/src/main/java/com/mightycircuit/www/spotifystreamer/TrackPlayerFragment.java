@@ -144,7 +144,7 @@ public class TrackPlayerFragment extends Fragment implements OnPreparedListener,
 
        // return inflater.inflate(R.layout.fragment_track_player, container, false);
 
-        Picasso.with(getActivity()).load(AlbumImageUrl).resize(500, 500).into(albumView);
+        Picasso.with(getActivity()).load(AlbumImageUrl).resize(640, 640).into(albumView);
 
 
         return rootView;

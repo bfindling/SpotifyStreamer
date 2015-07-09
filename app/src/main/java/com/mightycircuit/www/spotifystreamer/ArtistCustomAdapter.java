@@ -28,11 +28,15 @@ public class ArtistCustomAdapter extends ArrayAdapter<ElementAdapter> {
         this.context= context;
         this.artistNames=artistNames;
     }
+
+    public ArtistCustomAdapter (Context context){
+        super(context ,android.R.layout.activity_list_item);
+    }
     @Override
     public View getView(int position,View convertView, ViewGroup parent){
 
-        ElementAdapter artistPosition = getItem(position);
-        Log.d(LOG_TAG, "Position: "+ position + " artist name: " + artistPosition.artist);
+
+
 
         // Adapters recycle views to AdapterViews.
         // If this is a new View object we're getting, then inflate the layout.
@@ -45,11 +49,12 @@ public class ArtistCustomAdapter extends ArrayAdapter<ElementAdapter> {
 
         ImageView iconView = (ImageView) convertView.findViewById(R.id.artist_icon_view);
 
-        Picasso.with(context).load(artistPosition.image).resize(300, 300).into(iconView);
-
-
+        //update the item view
+        ElementAdapter artistPosition = getItem(position);
+        Picasso.with(context).load(artistPosition.image).resize(200, 200).into(iconView);
         TextView versionNameView = (TextView) convertView.findViewById(R.id.artist_name_view);
         versionNameView.setText(artistPosition.artist);
+        Log.d(LOG_TAG, "Position: " + position + " artist name: " + artistPosition.artist);
 
         return convertView;
 
