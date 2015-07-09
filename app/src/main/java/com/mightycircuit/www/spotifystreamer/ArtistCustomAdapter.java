@@ -45,7 +45,7 @@ public class ArtistCustomAdapter extends ArrayAdapter<ElementAdapter> {
 
         ImageView iconView = (ImageView) convertView.findViewById(R.id.artist_icon_view);
 
-        Picasso.with(context).load(artistPosition.image).resize(300, 300).into(iconView);
+        Picasso.with(context).load(artistPosition.image).resize(200, 200).centerCrop().into(iconView);
 
 
         TextView versionNameView = (TextView) convertView.findViewById(R.id.artist_name_view);
