@@ -101,16 +101,12 @@ public class ItemFragment extends Fragment implements AbsListView.OnItemClickLis
             mParam2 = getArguments().getString(ARG_PARAM2);
         }
 
-        //hmmmm....
-        //Bundle args = getArguments();
-        //if (args != null) {
-
         Bundle args = getArguments();
             String selectedName=args.getString(DataPassListener.DATA_RECEIVE);
-        //} else {
 
-         //String selectedName="Slayer";
-        //}
+
+        // TODO: copy the same structure from MainActivity Frag
+
 
         trackNamesList=new ArrayList<>();
         tracks = new ArrayList<>();

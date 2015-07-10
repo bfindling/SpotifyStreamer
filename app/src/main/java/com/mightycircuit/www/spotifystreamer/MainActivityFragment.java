@@ -2,6 +2,7 @@ package com.mightycircuit.www.spotifystreamer;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.res.Configuration;
 import android.os.AsyncTask;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
@@ -50,11 +51,13 @@ public class MainActivityFragment extends Fragment implements TextView.OnEditorA
     private ArtistCustomAdapter artistCustomAdapter;
     private EditText editText;
     private FetchArtistTask fetchArtistTask;
-    private List<ElementAdapter> artists;   //the raw list of artists
-    private List<String> artistNamesList; //the final list
+    private ArrayList<ElementAdapter> artists;   //the raw-full list of artists + data
+    private List<String> artistNamesList; //save a local list of the artists results
     private List<String> artistImagesList; //the final list
 
-    private ArrayList<ParcelBag> mParcel;    // the parcel list
+//    //parcelables--delete me?
+//    private ArtistCustomAdapter mAdapter;    // the list adapter
+//    private ArrayList<ElementAdapter> mArtists;    // the person list
 
     private SpotifyApi api;
     private SpotifyService spotify;
@@ -73,38 +76,37 @@ public class MainActivityFragment extends Fragment implements TextView.OnEditorA
         setHasOptionsMenu(true);
 
         artists = new ArrayList<>();
+
+
         artistNamesList = new ArrayList<>();
 
         artistCustomAdapter = new ArtistCustomAdapter(getActivity());
+        //setup spotify wrapper api
+        api = new SpotifyApi();
 
         if (savedInstanceState != null) {
             // read the  list from the saved state
-            artistNamesList = savedInstanceState.getParcelableArrayList(PARCLE_SAVE_KEY);
-            ElementAdapter adapterElement = new ElementAdapter("a", "Artist");
+            artists = savedInstanceState.getParcelableArrayList(PARCLE_SAVE_KEY);
+            Log.d(LOG_TAG, "onCreateView saved instance NOT null");
 
 
-            //setup spotify wrapper api
-            api = new SpotifyApi();
         } else {
-            //artistNamesList=new ArrayList<String>();
+
+
+        }
+            ElementAdapter adapterElement = new ElementAdapter("a", "Artist");
             artists.add(adapterElement);
             artistCustomAdapter = new ArtistCustomAdapter(getActivity(), artists);
-        }
 
-//        if (getArguments() == null) {
-//            ElementAdapter adapterElement = new ElementAdapter("a", "Artist");
-//            artists.add(adapterElement);
-//            artistCustomAdapter = new ArtistCustomAdapter(getActivity(), artists);
-//
-//            //setup spotify wrapper api
-//            api = new SpotifyApi();
-//        } else {
-//            //artistNamesList=new ArrayList<String>();
-//            mParcel = savedInstanceState.getParcelableArrayList(PARCLE_SAVE_KEY);
-//        }
 
     }
+    @Override
+    public void onConfigurationChanged(Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+        LayoutInflater inflater = LayoutInflater.from(getActivity());
 
+
+    }
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -112,10 +114,15 @@ public class MainActivityFragment extends Fragment implements TextView.OnEditorA
         Log.d(LOG_TAG, "MainActivityFragment onCreateView");
         View rootView = inflater.inflate(R.layout.fragment_main, container, false);
 
-        // Get a ref to the editText and set a listener to it
-        editText = (EditText) rootView.findViewById(R.id.editText);
-        editText.setOnEditorActionListener(this);
+        if (savedInstanceState == null) {
 
+            // Get a ref to the editText and set a listener to it
+            editText = (EditText) rootView.findViewById(R.id.editText);
+            editText.setOnEditorActionListener(this);
+        } else {
+            Log.d(LOG_TAG, "trying to update the adapter..");
+
+        }
         // Get a reference to the ListView, and attach this adapter to it.
         listView = (ListView) rootView.findViewById(R.id.listview_artist);
         listView.setAdapter(artistCustomAdapter);
@@ -145,10 +152,12 @@ public class MainActivityFragment extends Fragment implements TextView.OnEditorA
         }
     }
 
+
+
     @Override
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
-        outState.putParcelableArrayList(PARCLE_SAVE_KEY, mParcel);
+        outState.putParcelableArrayList(PARCLE_SAVE_KEY, artists);
     }
 
     @Override
@@ -181,7 +190,14 @@ public class MainActivityFragment extends Fragment implements TextView.OnEditorA
 
         //pass the selected artist name to the mainActivity and
         //trigger the second fragment to launch
-        mCallback.passData(getArtistList().get(position), itemFragment);
+
+        String selectedArtist;
+       // selectedArtist=getArtistList().get(position);
+        ElementAdapter artistPosition = artistCustomAdapter.getItem(position);
+        selectedArtist=artistPosition.artist;
+        mCallback.passData(selectedArtist, itemFragment);
+
+
 
     }
 

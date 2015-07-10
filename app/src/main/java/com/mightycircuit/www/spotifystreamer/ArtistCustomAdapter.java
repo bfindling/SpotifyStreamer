@@ -12,6 +12,7 @@ import android.widget.TextView;
 
 import com.squareup.picasso.Picasso;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -23,6 +24,7 @@ public class ArtistCustomAdapter extends ArrayAdapter<ElementAdapter> {
     //private List<Artist> artists;
     private List<ElementAdapter> artistNames;
 
+
     public ArtistCustomAdapter(Activity context, List<ElementAdapter> artistNames) {
         super(context, 0 , artistNames);
         this.context= context;
@@ -32,11 +34,16 @@ public class ArtistCustomAdapter extends ArrayAdapter<ElementAdapter> {
     public ArtistCustomAdapter (Context context){
         super(context ,android.R.layout.activity_list_item);
     }
+
+
+
+    public void setArray(ArrayList<ElementAdapter> mArtists){
+
+    }
+    ;
+
     @Override
     public View getView(int position,View convertView, ViewGroup parent){
-
-
-
 
         // Adapters recycle views to AdapterViews.
         // If this is a new View object we're getting, then inflate the layout.
@@ -51,9 +58,11 @@ public class ArtistCustomAdapter extends ArrayAdapter<ElementAdapter> {
 
         //update the item view
         ElementAdapter artistPosition = getItem(position);
-        Picasso.with(context).load(artistPosition.image).resize(200, 200).into(iconView);
+        Picasso.with(context).load(artistPosition.image).resize(200, 200).centerCrop().into(iconView);
+
         TextView versionNameView = (TextView) convertView.findViewById(R.id.artist_name_view);
         versionNameView.setText(artistPosition.artist);
+
         Log.d(LOG_TAG, "Position: " + position + " artist name: " + artistPosition.artist);
 
         return convertView;
