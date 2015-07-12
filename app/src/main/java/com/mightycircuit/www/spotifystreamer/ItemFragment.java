@@ -35,7 +35,8 @@ import kaaes.spotify.webapi.android.models.TracksPager;
  */
 public class ItemFragment extends Fragment implements AbsListView.OnItemClickListener {
     public static final String LOG_TAG = "SpotifyStreamer";
-    //final static String DATA_RECEIVE = "data_receive";
+    private static final String PARCLE_SAVE_KEY = "PARCEL_SAVE_KEY";
+
 
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -50,7 +51,7 @@ public class ItemFragment extends Fragment implements AbsListView.OnItemClickLis
     private ArtistCustomAdapter trackCustomAdapter;
     private EditText editText;
     private FetchTracksTask fetchTracksTask;
-    private List<ElementAdapter> tracks;    //the raw list of tracks
+    private ArrayList<ElementAdapter> tracks;    //the raw list of tracks
     private List<String> trackNamesList; //the final list or preview tracks
 
     private List<String> albumImageList;
@@ -101,36 +102,50 @@ public class ItemFragment extends Fragment implements AbsListView.OnItemClickLis
             mParam2 = getArguments().getString(ARG_PARAM2);
         }
 
-        Bundle args = getArguments();
-            String selectedName=args.getString(DataPassListener.DATA_RECEIVE);
-
-
         // TODO: copy the same structure from MainActivity Frag
-
 
         trackNamesList=new ArrayList<>();
         tracks = new ArrayList<>();
-        albumImageList = new ArrayList<>();
 
-        //temporary for debuggin
-        ElementAdapter adapterElement = new ElementAdapter("a", "Artist 1");
-        tracks.add(adapterElement);
-        adapterElement = new ElementAdapter("b", "Artist 2");
-        tracks.add(adapterElement);
-        trackCustomAdapter = new ArtistCustomAdapter(getActivity(), tracks);
+        //saved for track playback
+        albumImageList = new ArrayList<>();
 
         //setup spotify wrapper api
         api = new SpotifyApi();
 
-        fetchTracksTask = new FetchTracksTask();
-        //fetchTracksTask.execute(artistsCheatGrab.get(position).name.toString());
-        fetchTracksTask.execute(selectedName);
+        //check if first time
+        if (savedInstanceState != null) {
+            // read the  list from the saved state
+            tracks = savedInstanceState.getParcelableArrayList(PARCLE_SAVE_KEY);
+            Log.d(LOG_TAG, "onCreateView saved instance NOT null. tracks="+tracks);
 
-        // TODO: Change Adapter to display your content
-//        mAdapter = new ArrayAdapter<DummyContent.DummyItem>(getActivity(),
-//                android.R.layout.simple_list_item_1, android.R.id.text1, DummyContent.ITEMS);
+
+        } else {
+            //This is the first time inflating this fragment so fetch new track list
+            Bundle args = getArguments();
+            String selectedTrack=args.getString(DataPassListener.DATA_RECEIVE);
+
+            fetchTracksTask = new FetchTracksTask();
+            //fetchTracksTask.execute(artistsCheatGrab.get(position).name.toString());
+            fetchTracksTask.execute(selectedTrack);
+
+        }
+        trackCustomAdapter = new ArtistCustomAdapter(getActivity(), tracks);
+
+        Log.d(LOG_TAG, "trackCustomAdapter="+trackCustomAdapter);
+        //temporary for debuggin
+//        ElementAdapter adapterElement = new ElementAdapter("a", "Artist 1");
+//        tracks.add(adapterElement);
+//        adapterElement = new ElementAdapter("b", "Artist 2");
+//        tracks.add(adapterElement);
+
     }
 
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putParcelableArrayList(PARCLE_SAVE_KEY, tracks);
+    }
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -153,6 +168,9 @@ public class ItemFragment extends Fragment implements AbsListView.OnItemClickLis
 
         return rootView;
     }
+
+
+
 
     @Override
     public void onAttach(Activity activity) {
@@ -178,18 +196,19 @@ public class ItemFragment extends Fragment implements AbsListView.OnItemClickLis
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
         if (null != mListener) {
             // Notify the active callbacks interface (the activity, if the
-            // fragment is attached to one) that an item has been selected.
+            // fragment is a   artistCustomAdapter = new ArtistCustomAdapter(getActivity(), artists);
+            //attached to one) that an item has been selected.
             mListener.onFragmentInteraction(position);
         }
 
-        TrackPlayerFragment itemFragment = new TrackPlayerFragment();
+        TrackPlayerFragment trackFragment = new TrackPlayerFragment();
 
         //pass the selected artist name to the mainActivity and
         //trigger the second fragment to launch
 
 
       //change to getTrackNamesList
-        mCallback.passDataImage(albumImageList.get(position), trackNamesList.get(position), itemFragment);
+        mCallback.passDataImage(albumImageList.get(position), trackNamesList.get(position), trackFragment);
 
         //mCallback.passData("test", itemFragment);
 

@@ -72,15 +72,16 @@ public class MainActivityFragment extends Fragment implements TextView.OnEditorA
 
         super.onCreate(savedInstanceState);
         Log.d(LOG_TAG, "MainActivijava.lang.StringtyFragment onCreate");
-
+        Log.d(LOG_TAG, "artistCustomAdapter=" + artistCustomAdapter);
         setHasOptionsMenu(true);
 
+        artistNamesList = new ArrayList<>();
         artists = new ArrayList<>();
 
+        //original
+        //artistCustomAdapter = new ArtistCustomAdapter(getActivity());
 
-        artistNamesList = new ArrayList<>();
 
-        artistCustomAdapter = new ArtistCustomAdapter(getActivity());
         //setup spotify wrapper api
         api = new SpotifyApi();
 
@@ -89,24 +90,33 @@ public class MainActivityFragment extends Fragment implements TextView.OnEditorA
             artists = savedInstanceState.getParcelableArrayList(PARCLE_SAVE_KEY);
             Log.d(LOG_TAG, "onCreateView saved instance NOT null");
 
-
         } else {
-
+            //NA
+            //test
 
         }
-            ElementAdapter adapterElement = new ElementAdapter("a", "Artist");
-            artists.add(adapterElement);
-            artistCustomAdapter = new ArtistCustomAdapter(getActivity(), artists);
+
+
+
+        //do I need this?!?!?!?!?!?!?!?!?!?!?!?!?!?!?!?!?
+//            ElementAdapter adapterElement = new ElementAdapter("a", "Artist");
+//            artists.add(adapterElement);
+              artistCustomAdapter = new ArtistCustomAdapter(getActivity(), artists);
 
 
     }
-    @Override
-    public void onConfigurationChanged(Configuration newConfig) {
-        super.onConfigurationChanged(newConfig);
-        LayoutInflater inflater = LayoutInflater.from(getActivity());
+//    @Override
+//    public void onConfigurationChanged(Configuration newConfig) {
+//        super.onConfigurationChanged(newConfig); ElementAdapter adapterElement = new ElementAdapter("a", "Artist 1");
+//        tracks.add(adapterElement);
+//        adapterElement = new ElementAdapter("b", "Artist 2");
+//        tracks.add(adapterElement);
+//
+//        LayoutInflater inflater = LayoutInflater.from(getActivity());
+//
+//    }
 
 
-    }
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {

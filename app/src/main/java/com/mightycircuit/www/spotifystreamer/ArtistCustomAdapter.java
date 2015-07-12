@@ -40,7 +40,10 @@ public class ArtistCustomAdapter extends ArrayAdapter<ElementAdapter> {
     public void setArray(ArrayList<ElementAdapter> mArtists){
 
     }
-    ;
+//    @Override
+//    public int getCount() {
+//        return artistNames.size();
+//    }
 
     @Override
     public View getView(int position,View convertView, ViewGroup parent){
