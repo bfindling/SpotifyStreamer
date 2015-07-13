@@ -6,6 +6,7 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 
+import android.content.res.Configuration;
 import android.media.Image;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
@@ -38,8 +39,9 @@ import java.util.List;
         if (savedInstanceState == null) {
             getSupportFragmentManager().beginTransaction()
                     .add(R.id.fragment, new MainActivityFragment())
-                   // .addToBackStack(null)
+                  //  .addToBackStack(null)
                     .commit();
+
         }
 
     }
@@ -86,19 +88,24 @@ import java.util.List;
 
     @Override
     public void passData(String selectedArtist, Fragment fragment) {
-        FragmentManager fm = getFragmentManager();
+
 
         //http://stackoverflow.com/questions/16036572/how-to-pass-values-between-fragments
-
+        FragmentManager fm = getFragmentManager();
         Bundle args = new Bundle();
         args.putString(DataPassListener.DATA_RECEIVE, selectedArtist);
-        fragment .setArguments(args);
+       fragment .setArguments(args);
+
+
+
 
         getFragmentManager().beginTransaction()
+                //rename fragment
                 .add(R.id.fragment, fragment)
-                .addToBackStack(null)
+                .addToBackStack("MAIN_FRAG")
                 .commit();
-        Log.d(LOG_TAG, "Frag count=" + fm.getBackStackEntryCount());
+        fm.executePendingTransactions();
+        Log.d(LOG_TAG, "pass Data1 Frag count=" + fm.getBackStackEntryCount());
     }
 
 
@@ -115,29 +122,29 @@ import java.util.List;
 
         getFragmentManager().beginTransaction()
                 .add(R.id.fragment, fragment)
-                .addToBackStack(null)
+                .addToBackStack("ITEM_FRAG")
                 .commit();
-        Log.d(LOG_TAG, "Frag count=" + fm.getBackStackEntryCount());
+        fm.executePendingTransactions();
+        Log.d(LOG_TAG, "pass data2 Frag count=" + fm.getBackStackEntryCount());
     }
     @Override
     public void onBackPressed() {
         FragmentManager fm = getFragmentManager();
         //Fragment f = fm.findFragmentById(R.id.fragment);
-        Log.d(LOG_TAG, "Frag count=" + fm.getBackStackEntryCount());
+        Log.d(LOG_TAG, "BackButton Frag count=" + fm.getBackStackEntryCount());
+
 
         if (getFragmentManager().getBackStackEntryCount() > 0){
+
+            Log.d(LOG_TAG, "Frag stack POPPED!");
             boolean done = getFragmentManager().popBackStackImmediate();
         } else{
             finish();
             Log.d(LOG_TAG, "back button finished");
         }
 
+        //super.onBackPressed();
 
-//        if(fm.getBackStackEntryCount() > 1){
-//            fm.popBackStack();
-//        } else{
-//            finish();
-//            Log.d(LOG_TAG, "back button finished");
-//        }
     }
+
 }

@@ -66,7 +66,7 @@ public class ArtistCustomAdapter extends ArrayAdapter<ElementAdapter> {
         TextView versionNameView = (TextView) convertView.findViewById(R.id.artist_name_view);
         versionNameView.setText(artistPosition.artist);
 
-        Log.d(LOG_TAG, "Position: " + position + " artist name: " + artistPosition.artist);
+        //Log.d(LOG_TAG, "Position: " + position + " artist name: " + artistPosition.artist);
 
         return convertView;
 

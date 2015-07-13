@@ -1,8 +1,11 @@
 package com.mightycircuit.www.spotifystreamer;
 
+import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.Fragment;
+import android.app.FragmentManager;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 
 import android.util.Log;
@@ -132,7 +135,7 @@ public class ItemFragment extends Fragment implements AbsListView.OnItemClickLis
         }
         trackCustomAdapter = new ArtistCustomAdapter(getActivity(), tracks);
 
-        Log.d(LOG_TAG, "trackCustomAdapter="+trackCustomAdapter);
+        //Log.d(LOG_TAG, "trackCustomAdapter="+trackCustomAdapter);
         //temporary for debuggin
 //        ElementAdapter adapterElement = new ElementAdapter("a", "Artist 1");
 //        tracks.add(adapterElement);
@@ -146,15 +149,18 @@ public class ItemFragment extends Fragment implements AbsListView.OnItemClickLis
         super.onSaveInstanceState(outState);
         outState.putParcelableArrayList(PARCLE_SAVE_KEY, tracks);
     }
+
+
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_tracks, container, false);
 
+        Log.d(LOG_TAG, "Item Frag count=" + getFragmentManager().getBackStackEntryCount());
         // Set the adapter
        // mListView = (AbsListView) view.findViewById(android.R.id.list);
         //((AdapterView<ListAdapter>) mListView).setAdapter(mAdapter);
-
 
         // Get a reference to the ListView, and attach this adapter to it.
         listView = (ListView) rootView.findViewById(R.id.listview_tracks);
@@ -205,9 +211,6 @@ public class ItemFragment extends Fragment implements AbsListView.OnItemClickLis
 
         //pass the selected artist name to the mainActivity and
         //trigger the second fragment to launch
-
-
-      //change to getTrackNamesList
         mCallback.passDataImage(albumImageList.get(position), trackNamesList.get(position), trackFragment);
 
         //mCallback.passData("test", itemFragment);
@@ -274,7 +277,7 @@ public class ItemFragment extends Fragment implements AbsListView.OnItemClickLis
             //remove hardcoded and pass to asycnch
             String mArtistName = params[0];
 
-            Log.d(LOG_TAG, "passed artist name=" + mArtistName);
+           // Log.d(LOG_TAG, "passed artist name=" + mArtistName);
 
             TracksPager results = spotify.searchTracks(mArtistName);
 
@@ -301,11 +304,11 @@ public class ItemFragment extends Fragment implements AbsListView.OnItemClickLis
             //!
             List<Track> topTracks = tracksResults.tracks.items;
 
-            Log.d(LOG_TAG, "Artist results size=" + topTracks.size());
+           // Log.d(LOG_TAG, "Artist results size=" + topTracks.size());
 
             for (Track element : topTracks) {
 
-                Log.d(LOG_TAG, "images size=" + element.preview_url);
+               // Log.d(LOG_TAG, "images size=" + element.preview_url);
 
 
                 if (element.preview_url == null) {
@@ -337,7 +340,7 @@ public class ItemFragment extends Fragment implements AbsListView.OnItemClickLis
                 tracks.add(adapterElement);
 
 
-                Log.d(LOG_TAG, "track added to list:" + trackName);
+              //  Log.d(LOG_TAG, "track added to list:" + trackName);
             }
 
             Log.d(LOG_TAG, "Adapter updated.");

@@ -1,6 +1,7 @@
 package com.mightycircuit.www.spotifystreamer;
 
 import android.app.Activity;
+import android.app.FragmentManager;
 import android.content.Context;
 import android.content.res.Configuration;
 import android.os.AsyncTask;
@@ -16,6 +17,7 @@ import android.widget.AdapterView;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 
 import java.util.ArrayList;
@@ -28,6 +30,7 @@ import kaaes.spotify.webapi.android.models.ArtistsPager;
 import kaaes.spotify.webapi.android.models.Pager;
 import kaaes.spotify.webapi.android.models.Track;
 import kaaes.spotify.webapi.android.models.TracksPager;
+import retrofit.RetrofitError;
 
 
 /**
@@ -44,7 +47,7 @@ public class MainActivityFragment extends Fragment implements TextView.OnEditorA
     private static final String KEY_IMAGES = "images";
 
     // TODO: Rename and change types of parameters
-
+    public boolean changeFlag =false;
 
     public DataPassListener mCallback;
 
@@ -85,6 +88,7 @@ public class MainActivityFragment extends Fragment implements TextView.OnEditorA
         //setup spotify wrapper api
         api = new SpotifyApi();
 
+
         if (savedInstanceState != null) {
             // read the  list from the saved state
             artists = savedInstanceState.getParcelableArrayList(PARCLE_SAVE_KEY);
@@ -97,56 +101,45 @@ public class MainActivityFragment extends Fragment implements TextView.OnEditorA
         }
 
 
-
-        //do I need this?!?!?!?!?!?!?!?!?!?!?!?!?!?!?!?!?
-//            ElementAdapter adapterElement = new ElementAdapter("a", "Artist");
-//            artists.add(adapterElement);
-              artistCustomAdapter = new ArtistCustomAdapter(getActivity(), artists);
+        artistCustomAdapter = new ArtistCustomAdapter(getActivity(), artists);
 
 
     }
-//    @Override
-//    public void onConfigurationChanged(Configuration newConfig) {
-//        super.onConfigurationChanged(newConfig); ElementAdapter adapterElement = new ElementAdapter("a", "Artist 1");
-//        tracks.add(adapterElement);
-//        adapterElement = new ElementAdapter("b", "Artist 2");
-//        tracks.add(adapterElement);
-//
-//        LayoutInflater inflater = LayoutInflater.from(getActivity());
-//
-//    }
 
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
 
-        Log.d(LOG_TAG, "MainActivityFragment onCreateView");
+        // android.support.v4.app.FragmentManager fm = getFragmentManager();
+        Log.d(LOG_TAG, "MainFrag count=" + getFragmentManager().getBackStackEntryCount());
+        //Log.d(LOG_TAG, "Frag support count=" + fm.getBackStackEntryCount());
+
         View rootView = inflater.inflate(R.layout.fragment_main, container, false);
 
-        if (savedInstanceState == null) {
-
-            // Get a ref to the editText and set a listener to it
-            editText = (EditText) rootView.findViewById(R.id.editText);
-            editText.setOnEditorActionListener(this);
-        } else {
-            Log.d(LOG_TAG, "trying to update the adapter..");
-
-        }
-        // Get a reference to the ListView, and attach this adapter to it.
-        listView = (ListView) rootView.findViewById(R.id.listview_artist);
-        listView.setAdapter(artistCustomAdapter);
-        listView.setOnItemClickListener(this);
+        if (getFragmentManager().getBackStackEntryCount() < 1 ) {
+            changeFlag=false;
+            Log.d(LOG_TAG, "MainActivityFragment onCreateView inside backstack =0");
 
 
-        return rootView;
+            if (savedInstanceState == null) {
+
+                // Get a ref to the editText and set a listener to it
+                editText = (EditText) rootView.findViewById(R.id.editText);
+                editText.setOnEditorActionListener(this);
+            } else {
+                Log.d(LOG_TAG, "trying to update the adapter..");
+                artists = savedInstanceState.getParcelableArrayList(PARCLE_SAVE_KEY);
+            }
+            // Get a reference to the ListView, and attach this adapter to it.
+            listView = (ListView) rootView.findViewById(R.id.listview_artist);
+            listView.setAdapter(artistCustomAdapter);
+            listView.setOnItemClickListener(this);
+            return rootView;
+        } else return null;
     }
 
-    //mainActivity implements this to receive the artist name and pass it to the
-    // second fragment (top 10 trask list)
-//    public interface DataPassListener {
-//        public void passData(String selectedArtist);
-//    }
+
 
     @Override
     public void onAttach(Activity activity) {
@@ -163,7 +156,6 @@ public class MainActivityFragment extends Fragment implements TextView.OnEditorA
     }
 
 
-
     @Override
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
@@ -173,7 +165,7 @@ public class MainActivityFragment extends Fragment implements TextView.OnEditorA
     @Override
     public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
 
-        Log.d(LOG_TAG, "Search for: " + editText.getText().toString());
+        //  Log.d(LOG_TAG, "Search for: " + editText.getText().toString());
 
         InputMethodManager imm = (InputMethodManager) getActivity().getSystemService(
                 Context.INPUT_METHOD_SERVICE);
@@ -202,11 +194,10 @@ public class MainActivityFragment extends Fragment implements TextView.OnEditorA
         //trigger the second fragment to launch
 
         String selectedArtist;
-       // selectedArtist=getArtistList().get(position);
+        // selectedArtist=getArtistList().get(position);
         ElementAdapter artistPosition = artistCustomAdapter.getItem(position);
-        selectedArtist=artistPosition.artist;
+        selectedArtist = artistPosition.artist;
         mCallback.passData(selectedArtist, itemFragment);
-
 
 
     }
@@ -268,56 +259,59 @@ public class MainActivityFragment extends Fragment implements TextView.OnEditorA
             String name;
             // Artist element;
 
-            Log.d(LOG_TAG, "onPostExecute");
+            Log.d(LOG_TAG, "onPostExecute results:" + artistsResults.artists.items);
             //  mArtistAdapter.clear();
+
+            //  if (artists != null) {
 
             artistCustomAdapter.clear();
 
             //extract just the 20 artists and pics
             List<Artist> listOfArtists = artistsResults.artists.items;
+            if (!listOfArtists.isEmpty()) {
+
+                // Log.d(LOG_TAG, "Artist results size=" + listOfArtists.size());
+
+                for (Artist element : listOfArtists) {
+
+                    if (element.images == null) {
+                        Log.d(LOG_TAG, "null detected.");
+                        break;
+                    }
+                    if (element.name == null) {
+                        name = "ARTIST NOT FOUND";
+                    } else {
+                        name = element.name;
+                        //pass the artists to a field to be shared with listener
+                        setArtistList(name);
+
+                    }
+
+                    if (element.images.size() < IMAGE_SIZE_INDEX)
+
+                    {
+                        //blank place holder image
+                        imageUrl = "https://placeimg.com/100/100/people";
+                        Log.d(LOG_TAG, "null image detected.");
+
+                    } else {
+                        imageUrl = element.images.get(IMAGE_SIZE_INDEX).url;
+                    }
+
+                    //add to the adapterartists.isEmpty()
+                    adapterUpdate(imageUrl, name);
 
 
-            Log.d(LOG_TAG, "Artist results size=" + listOfArtists.size());
-
-            for (Artist element : listOfArtists) {
-                //for (int i=0; i< listOfArtists.size(); i++) {
-                //Log.d(LOG_TAG, "------- size=" + listOfArtists.size());
-
-                //element= listOfArtists.get(i);
-
-
-                Log.d(LOG_TAG, "images size=" + element.images.size());
-
-
-                if (element.images == null) {
-                    Log.d(LOG_TAG, "null detected.");
-                    break;
+                    //    Log.d(LOG_TAG, "Artist added to list:" + name);
                 }
-                if (element.name == null) {
-                    name = "ARTIST NOT FOUND";
-                } else {
-                    name = element.name;
-                    //pass the artists to a field to be shared with listener
-                    setArtistList(name);
 
-                }
-
-                if (element.images.size() < IMAGE_SIZE_INDEX)
-
-                {
-                    //blank place holder image
-                    imageUrl = "https://placeimg.com/100/100/people";
-                    Log.d(LOG_TAG, "null image detected.");
-
-                } else {
-                    imageUrl = element.images.get(IMAGE_SIZE_INDEX).url;
-                }
-
-                //add to the adapter
-                adapterUpdate(imageUrl, name);
-
-
-                Log.d(LOG_TAG, "Artist added to list:" + name);
+            } else {
+                //if (artists.isEmpty()) {
+                Context context = getActivity();
+                Toast.makeText(context, "Artist not found.", Toast.LENGTH_LONG).show();
+//                if (context != null) {
+//                    Toast.makeText(context, "Artist not found", Toast.LENGTH_LONG).show();
+//                }
             }
             //this doesnt work to hide the keyboard after listView is populated
             listView.requestFocus();
@@ -330,6 +324,7 @@ public class MainActivityFragment extends Fragment implements TextView.OnEditorA
 
 
     }
+
 
     private void adapterUpdate(String vImage, String vName) {
         //mArtistAdapter.add(name);
