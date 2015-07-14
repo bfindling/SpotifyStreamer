@@ -20,6 +20,11 @@ import com.squareup.picasso.Picasso;
 
 import java.util.List;
 
+
+
+//Stage 1 submission 1 FINAL
+//This is a back up copy to be kept for reference
+
 //ActionBarActivity deprecated so used AppCompatActivity instead....
 //public class MainActivity extends AppCompatActivity implements ItemFragment.OnFragmentInteractionListener, DataPassListener {
     public class MainActivity extends AppCompatActivity implements DataPassListener {
