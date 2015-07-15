@@ -30,7 +30,9 @@ import kaaes.spotify.webapi.android.models.ArtistsPager;
 import kaaes.spotify.webapi.android.models.Pager;
 import kaaes.spotify.webapi.android.models.Track;
 import kaaes.spotify.webapi.android.models.TracksPager;
+import retrofit.Callback;
 import retrofit.RetrofitError;
+import retrofit.client.Response;
 
 
 /**
@@ -38,16 +40,8 @@ import retrofit.RetrofitError;
  */
 public class MainActivityFragment extends Fragment implements TextView.OnEditorActionListener, AdapterView.OnItemClickListener {
     public static final String LOG_TAG = "SpotifyStreamer";
-    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-    private static final String ARG_PARAM1 = "param1";
-    private static final String ARG_PARAM2 = "param2";
+
     private static final String PARCLE_SAVE_KEY = "PARCEL_SAVE_KEY";
-
-    private static final String KEY_ARTISTS = "artist";
-    private static final String KEY_IMAGES = "images";
-
-    // TODO: Rename and change types of parameters
-    public boolean changeFlag =false;
 
     public DataPassListener mCallback;
 
@@ -56,11 +50,6 @@ public class MainActivityFragment extends Fragment implements TextView.OnEditorA
     private FetchArtistTask fetchArtistTask;
     private ArrayList<ElementAdapter> artists;   //the raw-full list of artists + data
     private List<String> artistNamesList; //save a local list of the artists results
-    private List<String> artistImagesList; //the final list
-
-//    //parcelables--delete me?
-//    private ArtistCustomAdapter mAdapter;    // the list adapter
-//    private ArrayList<ElementAdapter> mArtists;    // the person list
 
     private SpotifyApi api;
     private SpotifyService spotify;
@@ -81,10 +70,6 @@ public class MainActivityFragment extends Fragment implements TextView.OnEditorA
         artistNamesList = new ArrayList<>();
         artists = new ArrayList<>();
 
-        //original
-        //artistCustomAdapter = new ArtistCustomAdapter(getActivity());
-
-
         //setup spotify wrapper api
         api = new SpotifyApi();
 
@@ -100,9 +85,7 @@ public class MainActivityFragment extends Fragment implements TextView.OnEditorA
 
         }
 
-
         artistCustomAdapter = new ArtistCustomAdapter(getActivity(), artists);
-
 
     }
 
@@ -113,12 +96,11 @@ public class MainActivityFragment extends Fragment implements TextView.OnEditorA
 
         // android.support.v4.app.FragmentManager fm = getFragmentManager();
         Log.d(LOG_TAG, "MainFrag count=" + getFragmentManager().getBackStackEntryCount());
-        //Log.d(LOG_TAG, "Frag support count=" + fm.getBackStackEntryCount());
 
         View rootView = inflater.inflate(R.layout.fragment_main, container, false);
 
         if (getFragmentManager().getBackStackEntryCount() < 1 ) {
-            changeFlag=false;
+
             Log.d(LOG_TAG, "MainActivityFragment onCreateView inside backstack =0");
 
 
@@ -165,22 +147,22 @@ public class MainActivityFragment extends Fragment implements TextView.OnEditorA
     @Override
     public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
 
-        //  Log.d(LOG_TAG, "Search for: " + editText.getText().toString());
-
         InputMethodManager imm = (InputMethodManager) getActivity().getSystemService(
                 Context.INPUT_METHOD_SERVICE);
         imm.hideSoftInputFromWindow(v.getWindowToken(), 0);
 
+        spotifySearch(editText.getText().toString());
 
-        if (fetchArtistTask == null) {
-            // --- create a new task --
-            fetchArtistTask = new FetchArtistTask();
-            fetchArtistTask.execute(editText.getText().toString());
-        } else if (fetchArtistTask.getStatus() == AsyncTask.Status.FINISHED) {
-            // --- the task finished, so start another one --
-            fetchArtistTask = new FetchArtistTask();
-            fetchArtistTask.execute(editText.getText().toString());
-        }
+
+//        if (fetchArtistTask == null) {
+//            // --- create a new task --
+//            fetchArtistTask = new FetchArtistTask();
+//            fetchArtistTask.execute(editText.getText().toString());
+//        } else if (fetchArtistTask.getStatus() == AsyncTask.Status.FINISHED) {
+//            // --- the task finished, so start another one --
+//            fetchArtistTask = new FetchArtistTask();
+//            fetchArtistTask.execute(editText.getText().toString());
+//        }
 
 
         return false;
@@ -194,7 +176,7 @@ public class MainActivityFragment extends Fragment implements TextView.OnEditorA
         //trigger the second fragment to launch
 
         String selectedArtist;
-        // selectedArtist=getArtistList().get(position);
+
         ElementAdapter artistPosition = artistCustomAdapter.getItem(position);
         selectedArtist = artistPosition.artist;
         mCallback.passData(selectedArtist, itemFragment);
@@ -202,10 +184,6 @@ public class MainActivityFragment extends Fragment implements TextView.OnEditorA
 
     }
 
-
-    //    public void setDataPassListener(DataPassListener callBack){
-//        this.mCallback=callBack;
-//    }
     private void setArtistList(String vName) {
         //set the search results of just the names field for access by the click listener
         this.artistNamesList.add(vName);
@@ -216,13 +194,88 @@ public class MainActivityFragment extends Fragment implements TextView.OnEditorA
         return this.artistNamesList;
     }
 
+    public void showArtists(ArtistsPager artistsResults){
+
+        int IMAGE_SIZE_INDEX = 1;
+        String imageUrl;
+        String name;
+        // Artist element;
+
+        Log.d(LOG_TAG, "onPostExecute results:" + artistsResults.artists.items);
+
+        artistCustomAdapter.clear();
+
+        //extract just the 20 artists and pics
+        List<Artist> listOfArtists = artistsResults.artists.items;
+        if (!listOfArtists.isEmpty()) {
+
+            for (Artist element : listOfArtists) {
+
+                if (element.images == null) {
+                    Log.d(LOG_TAG, "null detected.");
+                    break;
+                }
+                if (element.name == null) {
+                    name = "ARTIST NOT FOUND";
+                } else {
+                    name = element.name;
+                    //pass the artists to a field to be shared with listener
+                    setArtistList(name);
+                }
+
+                if (element.images.size() < IMAGE_SIZE_INDEX)
+
+                {
+                    //blank place holder image
+                    imageUrl = "https://placeimg.com/100/100/people";
+                    Log.d(LOG_TAG, "null image detected.");
+
+                } else {
+                    imageUrl = element.images.get(IMAGE_SIZE_INDEX).url;
+                }
+
+                //add to the adapterartists.isEmpty()
+                adapterUpdate(imageUrl, name);
+            }
+
+        } else {
+            //if (artists.isEmpty()) {
+            Context context = getActivity();
+            Toast.makeText(context, "Artist not found.", Toast.LENGTH_LONG).show();
+        }
+        //this doesnt work to hide the keyboard after listView is populated
+        listView.requestFocus();
+
+        Log.d(LOG_TAG, "Adapter updated.");
+
+    }
+
+    public void spotifySearch(String name) {
+        spotify.searchArtists(name, new Callback<ArtistsPager>() {
+            @Override
+            public void success(final ArtistsPager artistsPager, Response response) {
+                getActivity().runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        showArtists(artistsPager);
+                    }
+                });
+            }
+
+            @Override
+            public void failure(RetrofitError error) {
+                getActivity().runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        //showErrorMessage(error.getMessage());
+                    }
+                });
+            }
+        });
+    }
+
+
     public class FetchArtistTask extends AsyncTask<String, Void, ArtistsPager> {
-
-        List<ArtistsPager> mArtistPagerTemp = new ArrayList<ArtistsPager>();
-
-//        public void FetchArtistTask(){
-//
-//        }
 
 
         @Override
@@ -238,96 +291,30 @@ public class MainActivityFragment extends Fragment implements TextView.OnEditorA
         protected ArtistsPager doInBackground(String... params) {
             Log.d(LOG_TAG, "doInBackGround");
 
-
-            //remove hardcoded and pass to asycnch
             String mArtistName = params[0];
-
             ArtistsPager results = spotify.searchArtists(mArtistName);
-
 
             //Get the data from the server and return it
             return results;
 
 
         }
-
         @Override
         protected void onPostExecute(ArtistsPager artistsResults) {
             super.onPostExecute(artistsResults);
-            int IMAGE_SIZE_INDEX = 1;
-            String imageUrl;
-            String name;
-            // Artist element;
-
-            Log.d(LOG_TAG, "onPostExecute results:" + artistsResults.artists.items);
-            //  mArtistAdapter.clear();
-
-            //  if (artists != null) {
-
-            artistCustomAdapter.clear();
-
-            //extract just the 20 artists and pics
-            List<Artist> listOfArtists = artistsResults.artists.items;
-            if (!listOfArtists.isEmpty()) {
-
-                // Log.d(LOG_TAG, "Artist results size=" + listOfArtists.size());
-
-                for (Artist element : listOfArtists) {
-
-                    if (element.images == null) {
-                        Log.d(LOG_TAG, "null detected.");
-                        break;
-                    }
-                    if (element.name == null) {
-                        name = "ARTIST NOT FOUND";
-                    } else {
-                        name = element.name;
-                        //pass the artists to a field to be shared with listener
-                        setArtistList(name);
-
-                    }
-
-                    if (element.images.size() < IMAGE_SIZE_INDEX)
-
-                    {
-                        //blank place holder image
-                        imageUrl = "https://placeimg.com/100/100/people";
-                        Log.d(LOG_TAG, "null image detected.");
-
-                    } else {
-                        imageUrl = element.images.get(IMAGE_SIZE_INDEX).url;
-                    }
-
-                    //add to the adapterartists.isEmpty()
-                    adapterUpdate(imageUrl, name);
-
-
-                    //    Log.d(LOG_TAG, "Artist added to list:" + name);
-                }
-
-            } else {
-                //if (artists.isEmpty()) {
-                Context context = getActivity();
-                Toast.makeText(context, "Artist not found.", Toast.LENGTH_LONG).show();
-//                if (context != null) {
-//                    Toast.makeText(context, "Artist not found", Toast.LENGTH_LONG).show();
-//                }
-            }
-            //this doesnt work to hide the keyboard after listView is populated
-            listView.requestFocus();
-
-            Log.d(LOG_TAG, "Adapter updated.");
-
-            //mForecastAdapter.notifyDataSetChanged();
+            showArtists(artistsResults);
 
         }
+
+
+
+
 
 
     }
 
 
     private void adapterUpdate(String vImage, String vName) {
-        //mArtistAdapter.add(name);
         ElementAdapter adapterElement = new ElementAdapter(vImage, vName);
         artists.add(adapterElement);
 

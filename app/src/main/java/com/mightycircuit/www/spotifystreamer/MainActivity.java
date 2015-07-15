@@ -20,6 +20,11 @@ import com.squareup.picasso.Picasso;
 
 import java.util.List;
 
+//Trying to remove asynch task and use the asynchronous spotify wrapper
+
+
+
+
 //ActionBarActivity deprecated so used AppCompatActivity instead....
 //public class MainActivity extends AppCompatActivity implements ItemFragment.OnFragmentInteractionListener, DataPassListener {
     public class MainActivity extends AppCompatActivity implements DataPassListener {
