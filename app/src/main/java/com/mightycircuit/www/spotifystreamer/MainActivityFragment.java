@@ -20,6 +20,8 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -47,7 +49,7 @@ public class MainActivityFragment extends Fragment implements TextView.OnEditorA
     private static final String KEY_IMAGES = "images";
 
     // TODO: Rename and change types of parameters
-    public boolean changeFlag =false;
+    public boolean changeFlag = false;
 
     public DataPassListener mCallback;
 
@@ -117,8 +119,8 @@ public class MainActivityFragment extends Fragment implements TextView.OnEditorA
 
         View rootView = inflater.inflate(R.layout.fragment_main, container, false);
 
-        if (getFragmentManager().getBackStackEntryCount() < 1 ) {
-            changeFlag=false;
+        if (getFragmentManager().getBackStackEntryCount() < 1) {
+            changeFlag = false;
             Log.d(LOG_TAG, "MainActivityFragment onCreateView inside backstack =0");
 
 
@@ -138,7 +140,6 @@ public class MainActivityFragment extends Fragment implements TextView.OnEditorA
             return rootView;
         } else return null;
     }
-
 
 
     @Override
@@ -217,6 +218,7 @@ public class MainActivityFragment extends Fragment implements TextView.OnEditorA
     }
 
     public class FetchArtistTask extends AsyncTask<String, Void, ArtistsPager> {
+        Exception error;
 
         List<ArtistsPager> mArtistPagerTemp = new ArrayList<ArtistsPager>();
 
@@ -229,7 +231,17 @@ public class MainActivityFragment extends Fragment implements TextView.OnEditorA
         protected void onPreExecute() {
             super.onPreExecute();
             Log.d(LOG_TAG, "onPreExecute");
-            spotify = api.getService();
+
+            try {
+                spotify = api.getService();
+
+            } catch (Exception e) {
+                toastOnUI(e.toString());
+                error=e;
+                Log.d(LOG_TAG, "caught error-preExec" +e);
+            }
+
+
 
         }
 
@@ -242,12 +254,35 @@ public class MainActivityFragment extends Fragment implements TextView.OnEditorA
             //remove hardcoded and pass to asycnch
             String mArtistName = params[0];
 
-            ArtistsPager results = spotify.searchArtists(mArtistName);
+
+            try {
+                ArtistsPager results = spotify.searchArtists(mArtistName);
+                return results;
+            } catch (Exception e) {
+                Log.d(LOG_TAG, "caught error in backGround" +e);
+                toastOnUI(e.toString());
+                error=e;
+                return null;
+            }
 
 
             //Get the data from the server and return it
-            return results;
+            // return results;
 
+
+        }
+
+
+        public void toastOnUI(final String msg) {
+            // display a toast msg on the main UI
+            getActivity().runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+
+                    Context context = getActivity();
+                    Toast.makeText(context, msg, Toast.LENGTH_LONG).show();
+                }
+            });
 
         }
 
@@ -259,60 +294,66 @@ public class MainActivityFragment extends Fragment implements TextView.OnEditorA
             String name;
             // Artist element;
 
-            Log.d(LOG_TAG, "onPostExecute results:" + artistsResults.artists.items);
+
+
             //  mArtistAdapter.clear();
 
             //  if (artists != null) {
 
             artistCustomAdapter.clear();
 
-            //extract just the 20 artists and pics
-            List<Artist> listOfArtists = artistsResults.artists.items;
-            if (!listOfArtists.isEmpty()) {
+            if (artistsResults !=null ) {
 
-                // Log.d(LOG_TAG, "Artist results size=" + listOfArtists.size());
 
-                for (Artist element : listOfArtists) {
+                //extract just the 20 artists and pics
+                List<Artist> listOfArtists = artistsResults.artists.items;
+                Log.d(LOG_TAG, "onPostExecute results:" + artistsResults.artists.items);
+                if (!listOfArtists.isEmpty()) {
 
-                    if (element.images == null) {
-                        Log.d(LOG_TAG, "null detected.");
-                        break;
+                    // Log.d(LOG_TAG, "Artist results size=" + listOfArtists.size());
+
+                    for (Artist element : listOfArtists) {
+
+                        if (element.images == null) {
+                            Log.d(LOG_TAG, "null detected.");
+                            break;
+                        }
+                        if (element.name == null) {
+                            name = "ARTIST NOT FOUND";
+                        } else {
+                            name = element.name;
+                            //pass the artists to a field to be shared with listener
+                            setArtistList(name);
+
+                        }
+
+                        if (element.images.size() < IMAGE_SIZE_INDEX)
+
+                        {
+                            //blank place holder image
+                            imageUrl = "https://placeimg.com/100/100/people";
+                            Log.d(LOG_TAG, "null image detected.");
+
+                        } else {
+                            imageUrl = element.images.get(IMAGE_SIZE_INDEX).url;
+                        }
+
+                        //add to the adapterartists.isEmpty()
+                        adapterUpdate(imageUrl, name);
+
+
+                        //    Log.d(LOG_TAG, "Artist added to list:" + name);
                     }
-                    if (element.name == null) {
-                        name = "ARTIST NOT FOUND";
-                    } else {
-                        name = element.name;
-                        //pass the artists to a field to be shared with listener
-                        setArtistList(name);
 
-                    }
-
-                    if (element.images.size() < IMAGE_SIZE_INDEX)
-
-                    {
-                        //blank place holder image
-                        imageUrl = "https://placeimg.com/100/100/people";
-                        Log.d(LOG_TAG, "null image detected.");
-
-                    } else {
-                        imageUrl = element.images.get(IMAGE_SIZE_INDEX).url;
-                    }
-
-                    //add to the adapterartists.isEmpty()
-                    adapterUpdate(imageUrl, name);
-
-
-                    //    Log.d(LOG_TAG, "Artist added to list:" + name);
+                } else {
+                    //search came back empty
+                    toastOnUI("Artist not found.");
                 }
-
             } else {
-                //if (artists.isEmpty()) {
-                Context context = getActivity();
-                Toast.makeText(context, "Artist not found.", Toast.LENGTH_LONG).show();
-//                if (context != null) {
-//                    Toast.makeText(context, "Artist not found", Toast.LENGTH_LONG).show();
-//                }
+
+                toastOnUI("Having trouble retrieving results.." + error);
             }
+
             //this doesnt work to hide the keyboard after listView is populated
             listView.requestFocus();
 

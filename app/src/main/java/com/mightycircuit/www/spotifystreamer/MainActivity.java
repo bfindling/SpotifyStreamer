@@ -38,10 +38,12 @@ import java.util.List;
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
+        Log.d(LOG_TAG, "MainActivity onCreate !!!!!!!!!!!!!!!!!!!");
 
         //first fragment
         if (savedInstanceState == null) {
+            Log.d(LOG_TAG, "--------MainActivity creating frag cause NULL!");
+
             getSupportFragmentManager().beginTransaction()
                     .add(R.id.fragment, new MainActivityFragment())
                   //  .addToBackStack(null)
@@ -99,7 +101,7 @@ import java.util.List;
         FragmentManager fm = getFragmentManager();
         Bundle args = new Bundle();
         args.putString(DataPassListener.DATA_RECEIVE, selectedArtist);
-       fragment .setArguments(args);
+       fragment.setArguments(args);
 
 
 

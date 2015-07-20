@@ -4,6 +4,7 @@ import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.Fragment;
 import android.app.FragmentManager;
+import android.content.Context;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
@@ -17,6 +18,7 @@ import android.widget.AdapterView;
 import android.widget.EditText;
 import android.widget.ListAdapter;
 import android.widget.ListView;
+import android.widget.Toast;
 
 
 import java.util.ArrayList;
@@ -24,6 +26,7 @@ import java.util.List;
 
 import kaaes.spotify.webapi.android.SpotifyApi;
 import kaaes.spotify.webapi.android.SpotifyService;
+import kaaes.spotify.webapi.android.models.ArtistsPager;
 import kaaes.spotify.webapi.android.models.Track;
 import kaaes.spotify.webapi.android.models.TracksPager;
 
@@ -79,15 +82,15 @@ public class ItemFragment extends Fragment implements AbsListView.OnItemClickLis
      */
     private ListAdapter mAdapter;
 
-    // TODO: Rename and change types of parameters
-    public static ItemFragment newInstance(String param1, String param2) {
-        ItemFragment fragment = new ItemFragment();
-        Bundle args = new Bundle();
-        args.putString(ARG_PARAM1, param1);
-        args.putString(ARG_PARAM2, param2);
-        fragment.setArguments(args);
-        return fragment;
-    }
+//    // TODO: Rename and change types of parameters
+//    public static ItemFragment newInstance(String param1, String param2) {
+//        ItemFragment fragment = new ItemFragment();
+//        Bundle args = new Bundle();
+//        args.putString(ARG_PARAM1, param1);
+//        args.putString(ARG_PARAM2, param2);
+//        fragment.setArguments(args);
+//        return fragment;
+//    }
 
     /**
      * Mandatory empty constructor for the fragment manager to instantiate the
@@ -251,9 +254,21 @@ public class ItemFragment extends Fragment implements AbsListView.OnItemClickLis
         public void onFragmentInteraction(int id);
     }
 
+    public void toastOnUI(final String msg) {
+        // display a toast msg on the main UI
+        getActivity().runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+
+                Context context = getActivity();
+                Toast.makeText(context, msg, Toast.LENGTH_LONG).show();
+            }
+        });
+
+    }
 
     public class FetchTracksTask extends AsyncTask<String, Void, TracksPager> {
-
+        Exception error;
 
 //        public void FetchArtistTask(){
 //
@@ -264,7 +279,18 @@ public class ItemFragment extends Fragment implements AbsListView.OnItemClickLis
         protected void onPreExecute() {
             super.onPreExecute();
             Log.d(LOG_TAG, "onPreExecute");
-            spotify = api.getService();
+
+
+            try {
+                spotify = api.getService();
+
+            } catch (Exception e) {
+                toastOnUI(e.toString());
+                error=e;
+                Log.d(LOG_TAG, "caught error-preExec" +e);
+            }
+
+
 
         }
 
@@ -279,11 +305,19 @@ public class ItemFragment extends Fragment implements AbsListView.OnItemClickLis
 
            // Log.d(LOG_TAG, "passed artist name=" + mArtistName);
 
-            TracksPager results = spotify.searchTracks(mArtistName);
 
 
+            try {
+                TracksPager results = spotify.searchTracks(mArtistName);
+                return results;
+            } catch (Exception e) {
+                Log.d(LOG_TAG, "caught error in backGround" +e);
+                toastOnUI(e.toString());
+                error=e;
+                return null;
+            }
             //Get the data from the server and return it
-            return results;
+
 
 
         }
@@ -301,50 +335,53 @@ public class ItemFragment extends Fragment implements AbsListView.OnItemClickLis
 
             trackCustomAdapter.clear();
 
-            //!
-            List<Track> topTracks = tracksResults.tracks.items;
+            if (tracksResults !=null) {
+                //!
+                List<Track> topTracks = tracksResults.tracks.items;
 
-           // Log.d(LOG_TAG, "Artist results size=" + topTracks.size());
+                for (Track element : topTracks) {
 
-            for (Track element : topTracks) {
-
-               // Log.d(LOG_TAG, "images size=" + element.preview_url);
+                    // Log.d(LOG_TAG, "images size=" + element.preview_url);
 
 
-                if (element.preview_url == null) {
-                    Log.d(LOG_TAG, "null detected.");
-                    break;
+                    if (element.preview_url == null) {
+                        Log.d(LOG_TAG, "null detected.");
+                        break;
+                    }
+                    if (element.name == null) {
+                        trackName = "NOT FOUND";
+                    } else {
+                        trackName = element.name;
+                    }
+
+                    if (element.album.images.size() < IMAGE_SIZE_INDEX)
+
+                    {
+                        //blank place holder image
+                        imageUrl = "https://placeimg.com/100/100/people";
+                        Log.d(LOG_TAG, "null image detected.");
+
+                    } else {
+                        imageUrl = element.album.images.get(IMAGE_SIZE_INDEX).url;
+                        setImageList(imageUrl);
+                    }
+                    //pass the track URL to a field to be shared with listener
+                    setTracksList(element.preview_url);
+
+                    //mArtistAdapter.add(name);
+                    ElementAdapter adapterElement = new ElementAdapter(imageUrl, trackName);
+                    tracks.add(adapterElement);
+
+
+                    //  Log.d(LOG_TAG, "track added to list:" + trackName);
                 }
-                if (element.name == null) {
-                    trackName = "ARTIST NOT FOUND";
-                } else {
-                    trackName = element.name;
-                }
 
-                if (element.album.images.size() < IMAGE_SIZE_INDEX)
-
-                {
-                    //blank place holder image
-                    imageUrl = "https://placeimg.com/100/100/people";
-                    Log.d(LOG_TAG, "null image detected.");
-
-                } else {
-                    imageUrl = element.album.images.get(IMAGE_SIZE_INDEX).url;
-                    setImageList(imageUrl);
-                }
-                //pass the track URL to a field to be shared with listener
-                setTracksList(element.preview_url);
-
-                //mArtistAdapter.add(name);
-                ElementAdapter adapterElement = new ElementAdapter(imageUrl, trackName);
-                tracks.add(adapterElement);
-
-
-              //  Log.d(LOG_TAG, "track added to list:" + trackName);
+                Log.d(LOG_TAG, "Adapter updated.");
             }
-
-            Log.d(LOG_TAG, "Adapter updated.");
-
+            else {
+                //search came back empty due to error
+                toastOnUI("Unable to retreive tracks..");
+            }
 
         }
 
