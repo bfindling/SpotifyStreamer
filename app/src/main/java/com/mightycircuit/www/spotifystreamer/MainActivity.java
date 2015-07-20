@@ -21,13 +21,15 @@ import com.squareup.picasso.Picasso;
 import java.util.List;
 
 //Trying to remove asynch task and use the asynchronous spotify wrapper
-
+//I was able to switch the mainActivityFragment to use the asynchronous version of
+// the spotify wrapper but handling the parcelable would require a lot of
+// refactoring the code so I abandoned this approach due to time constraints...
 
 
 
 //ActionBarActivity deprecated so used AppCompatActivity instead....
 //public class MainActivity extends AppCompatActivity implements ItemFragment.OnFragmentInteractionListener, DataPassListener {
-    public class MainActivity extends AppCompatActivity implements DataPassListener {
+public class MainActivity extends AppCompatActivity implements DataPassListener {
     List<ElementAdapter> placeholder;
     String id;
     public static final String LOG_TAG = "SpotifyStreamer";
@@ -44,7 +46,7 @@ import java.util.List;
         if (savedInstanceState == null) {
             getSupportFragmentManager().beginTransaction()
                     .add(R.id.fragment, new MainActivityFragment())
-                  //  .addToBackStack(null)
+                            //  .addToBackStack(null)
                     .commit();
 
         }
@@ -99,9 +101,7 @@ import java.util.List;
         FragmentManager fm = getFragmentManager();
         Bundle args = new Bundle();
         args.putString(DataPassListener.DATA_RECEIVE, selectedArtist);
-       fragment .setArguments(args);
-
-
+        fragment.setArguments(args);
 
 
         getFragmentManager().beginTransaction()
@@ -119,11 +119,10 @@ import java.util.List;
         FragmentManager fm = getFragmentManager();
 
 
-
         Bundle args = new Bundle();
         args.putString(DataPassListener.DATA_RECEIVE, selectedArtist);
         args.putString(DataPassListener.IMAGE_RECEIVE, image);
-        fragment .setArguments(args);
+        fragment.setArguments(args);
 
         getFragmentManager().beginTransaction()
                 .add(R.id.fragment, fragment)
@@ -132,6 +131,7 @@ import java.util.List;
         fm.executePendingTransactions();
         Log.d(LOG_TAG, "pass data2 Frag count=" + fm.getBackStackEntryCount());
     }
+
     @Override
     public void onBackPressed() {
         FragmentManager fm = getFragmentManager();
@@ -139,11 +139,11 @@ import java.util.List;
         Log.d(LOG_TAG, "BackButton Frag count=" + fm.getBackStackEntryCount());
 
 
-        if (getFragmentManager().getBackStackEntryCount() > 0){
+        if (getFragmentManager().getBackStackEntryCount() > 0) {
 
             Log.d(LOG_TAG, "Frag stack POPPED!");
             boolean done = getFragmentManager().popBackStackImmediate();
-        } else{
+        } else {
             finish();
             Log.d(LOG_TAG, "back button finished");
         }

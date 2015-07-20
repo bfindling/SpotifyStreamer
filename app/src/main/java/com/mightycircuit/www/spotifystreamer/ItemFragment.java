@@ -20,12 +20,19 @@ import android.widget.ListView;
 
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import kaaes.spotify.webapi.android.SpotifyApi;
 import kaaes.spotify.webapi.android.SpotifyService;
+import kaaes.spotify.webapi.android.models.ArtistsPager;
 import kaaes.spotify.webapi.android.models.Track;
+import kaaes.spotify.webapi.android.models.Tracks;
 import kaaes.spotify.webapi.android.models.TracksPager;
+import retrofit.Callback;
+import retrofit.RetrofitError;
+import retrofit.client.Response;
 
 /**
  * A fragment representing a list of Items.
@@ -128,19 +135,12 @@ public class ItemFragment extends Fragment implements AbsListView.OnItemClickLis
             Bundle args = getArguments();
             String selectedTrack=args.getString(DataPassListener.DATA_RECEIVE);
 
-            fetchTracksTask = new FetchTracksTask();
-            //fetchTracksTask.execute(artistsCheatGrab.get(position).name.toString());
-            fetchTracksTask.execute(selectedTrack);
+//            fetchTracksTask = new FetchTracksTask();
+//            fetchTracksTask.execute(selectedTrack);
+            spotifySearch(selectedTrack);
 
         }
         trackCustomAdapter = new ArtistCustomAdapter(getActivity(), tracks);
-
-        //Log.d(LOG_TAG, "trackCustomAdapter="+trackCustomAdapter);
-        //temporary for debuggin
-//        ElementAdapter adapterElement = new ElementAdapter("a", "Artist 1");
-//        tracks.add(adapterElement);
-//        adapterElement = new ElementAdapter("b", "Artist 2");
-//        tracks.add(adapterElement);
 
     }
 
@@ -251,6 +251,87 @@ public class ItemFragment extends Fragment implements AbsListView.OnItemClickLis
         public void onFragmentInteraction(int id);
     }
 
+    //public void showTracks(TracksPager tracksResults){
+    public void showTracks(Tracks tracksResults){
+
+        int IMAGE_SIZE_INDEX = 1;
+        String imageUrl;
+        String trackName;
+
+
+        Log.d(LOG_TAG, "showTracks");
+
+
+        trackCustomAdapter.clear();
+
+        //!
+        List<Track> topTracks = tracksResults.tracks;
+
+        for (Track element : topTracks) {
+
+            if (element.preview_url == null) {
+                Log.d(LOG_TAG, "null detected.");
+                break;
+            }
+            if (element.name == null) {
+                trackName = "ARTIST NOT FOUND";
+            } else {
+                trackName = element.name;
+            }
+
+            if (element.album.images.size() < IMAGE_SIZE_INDEX)
+
+            {
+                //blank place holder image
+                imageUrl = "https://placeimg.com/100/100/people";
+                Log.d(LOG_TAG, "null image detected.");
+
+            } else {
+                imageUrl = element.album.images.get(IMAGE_SIZE_INDEX).url;
+                setImageList(imageUrl);
+            }
+            //pass the track URL to a field to be shared with listener
+            setTracksList(element.preview_url);
+
+            ElementAdapter adapterElement = new ElementAdapter(imageUrl, trackName);
+            tracks.add(adapterElement);
+
+        }
+
+        Log.d(LOG_TAG, "Adapter updated.");
+
+
+    }
+    public void spotifySearch(String name) {
+        SpotifyService spotify = api.getService();
+        Log.d(LOG_TAG, "spotify search: " + name);
+
+        Map<String, Object> options = new HashMap<>();
+        options.put("country", "US");
+
+        spotify.getArtistTopTrack(name,options, new Callback<Tracks>() {
+            @Override
+            public void success(final Tracks tracks, Response response) {
+             getActivity().runOnUiThread(new Runnable(){
+
+                 @Override
+                 public void run() {
+                     Log.d(LOG_TAG, "spotify search SUCCESS.");
+                        showTracks(tracks);
+                 }
+             });
+
+
+            }
+
+            @Override
+            public void failure(RetrofitError error) {
+                Log.d(LOG_TAG, "spotify search FAILURE: " + error);
+            }
+        });
+
+    }
+
 
     public class FetchTracksTask extends AsyncTask<String, Void, TracksPager> {
 
@@ -291,63 +372,8 @@ public class ItemFragment extends Fragment implements AbsListView.OnItemClickLis
         @Override
         protected void onPostExecute(TracksPager tracksResults) {
             super.onPostExecute(tracksResults);
-            int IMAGE_SIZE_INDEX = 1;
-            String imageUrl;
-            String trackName;
-            // Artist element;
-
-            Log.d(LOG_TAG, "onPostExecute");
-            //  mArtistAdapter.clear();
-
-            trackCustomAdapter.clear();
-
-            //!
-            List<Track> topTracks = tracksResults.tracks.items;
-
-           // Log.d(LOG_TAG, "Artist results size=" + topTracks.size());
-
-            for (Track element : topTracks) {
-
-               // Log.d(LOG_TAG, "images size=" + element.preview_url);
-
-
-                if (element.preview_url == null) {
-                    Log.d(LOG_TAG, "null detected.");
-                    break;
-                }
-                if (element.name == null) {
-                    trackName = "ARTIST NOT FOUND";
-                } else {
-                    trackName = element.name;
-                }
-
-                if (element.album.images.size() < IMAGE_SIZE_INDEX)
-
-                {
-                    //blank place holder image
-                    imageUrl = "https://placeimg.com/100/100/people";
-                    Log.d(LOG_TAG, "null image detected.");
-
-                } else {
-                    imageUrl = element.album.images.get(IMAGE_SIZE_INDEX).url;
-                    setImageList(imageUrl);
-                }
-                //pass the track URL to a field to be shared with listener
-                setTracksList(element.preview_url);
-
-                //mArtistAdapter.add(name);
-                ElementAdapter adapterElement = new ElementAdapter(imageUrl, trackName);
-                tracks.add(adapterElement);
-
-
-              //  Log.d(LOG_TAG, "track added to list:" + trackName);
-            }
-
-            Log.d(LOG_TAG, "Adapter updated.");
-
 
         }
-
 
     }
 

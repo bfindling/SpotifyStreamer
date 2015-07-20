@@ -27,6 +27,9 @@ public class ParcelBag implements Parcelable {
     //empty constructor for array creation
     public ParcelBag(){
 
+
+
+
     }
 
     public String getArtistNameElement (int pos){

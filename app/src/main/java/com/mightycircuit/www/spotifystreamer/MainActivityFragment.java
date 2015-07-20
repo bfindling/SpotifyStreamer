@@ -1,9 +1,7 @@
 package com.mightycircuit.www.spotifystreamer;
 
 import android.app.Activity;
-import android.app.FragmentManager;
 import android.content.Context;
-import android.content.res.Configuration;
 import android.os.AsyncTask;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
@@ -27,9 +25,6 @@ import kaaes.spotify.webapi.android.SpotifyApi;
 import kaaes.spotify.webapi.android.SpotifyService;
 import kaaes.spotify.webapi.android.models.Artist;
 import kaaes.spotify.webapi.android.models.ArtistsPager;
-import kaaes.spotify.webapi.android.models.Pager;
-import kaaes.spotify.webapi.android.models.Track;
-import kaaes.spotify.webapi.android.models.TracksPager;
 import retrofit.Callback;
 import retrofit.RetrofitError;
 import retrofit.client.Response;
@@ -42,6 +37,7 @@ public class MainActivityFragment extends Fragment implements TextView.OnEditorA
     public static final String LOG_TAG = "SpotifyStreamer";
 
     private static final String PARCLE_SAVE_KEY = "PARCEL_SAVE_KEY";
+    private static final String PARCLE_SAVE_KEY_ID = "PARCEL_SAVE_KEY_ID";
 
     public DataPassListener mCallback;
 
@@ -49,7 +45,7 @@ public class MainActivityFragment extends Fragment implements TextView.OnEditorA
     private EditText editText;
     private FetchArtistTask fetchArtistTask;
     private ArrayList<ElementAdapter> artists;   //the raw-full list of artists + data
-    private List<String> artistNamesList; //save a local list of the artists results
+    private List<String> artistIdList; //save a local list of the artists results
 
     private SpotifyApi api;
     private SpotifyService spotify;
@@ -67,7 +63,7 @@ public class MainActivityFragment extends Fragment implements TextView.OnEditorA
         Log.d(LOG_TAG, "artistCustomAdapter=" + artistCustomAdapter);
         setHasOptionsMenu(true);
 
-        artistNamesList = new ArrayList<>();
+        artistIdList = new ArrayList<>();
         artists = new ArrayList<>();
 
         //setup spotify wrapper api
@@ -95,10 +91,9 @@ public class MainActivityFragment extends Fragment implements TextView.OnEditorA
                              Bundle savedInstanceState) {
 
         // android.support.v4.app.FragmentManager fm = getFragmentManager();
-        Log.d(LOG_TAG, "MainFrag count=" + getFragmentManager().getBackStackEntryCount());
 
         View rootView = inflater.inflate(R.layout.fragment_main, container, false);
-
+        Log.d(LOG_TAG, "MainFrag count=" + getFragmentManager().getBackStackEntryCount());
         if (getFragmentManager().getBackStackEntryCount() < 1 ) {
 
             Log.d(LOG_TAG, "MainActivityFragment onCreateView inside backstack =0");
@@ -141,6 +136,8 @@ public class MainActivityFragment extends Fragment implements TextView.OnEditorA
     @Override
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
+
+        //outState.putParcelableArrayList(PARCLE_SAVE_KEY, artists);
         outState.putParcelableArrayList(PARCLE_SAVE_KEY, artists);
     }
 
@@ -151,6 +148,7 @@ public class MainActivityFragment extends Fragment implements TextView.OnEditorA
                 Context.INPUT_METHOD_SERVICE);
         imm.hideSoftInputFromWindow(v.getWindowToken(), 0);
 
+        Log.d(LOG_TAG, "search for:" + editText.getText().toString());
         spotifySearch(editText.getText().toString());
 
 
@@ -177,21 +175,27 @@ public class MainActivityFragment extends Fragment implements TextView.OnEditorA
 
         String selectedArtist;
 
-        ElementAdapter artistPosition = artistCustomAdapter.getItem(position);
-        selectedArtist = artistPosition.artist;
-        mCallback.passData(selectedArtist, itemFragment);
-
+//        ElementAdapter artistPosition = artistCustomAdapter.getItem(position);
+//        selectedArtist = artistPosition.artist;
+//        mCallback.passData(selectedArtist, itemFragment);
+        mCallback.passData(getArtistId(position), itemFragment);
 
     }
 
-    private void setArtistList(String vName) {
+    private String getArtistId(int position){
+
+        return artistIdList.get(position);
+    }
+
+    private void setArtistIdList(String vName) {
         //set the search results of just the names field for access by the click listener
-        this.artistNamesList.add(vName);
+
+       this.artistIdList.add(vName);
     }
 
     private List<String> getArtistList() {
         //get the artist names list
-        return this.artistNamesList;
+        return this.artistIdList;
     }
 
     public void showArtists(ArtistsPager artistsResults){
@@ -200,8 +204,8 @@ public class MainActivityFragment extends Fragment implements TextView.OnEditorA
         String imageUrl;
         String name;
         // Artist element;
-
-        Log.d(LOG_TAG, "onPostExecute results:" + artistsResults.artists.items);
+        Log.d(LOG_TAG, "showArtist:");
+        Log.d(LOG_TAG, "Results:" + artistsResults.artists.items);
 
         artistCustomAdapter.clear();
 
@@ -219,8 +223,8 @@ public class MainActivityFragment extends Fragment implements TextView.OnEditorA
                     name = "ARTIST NOT FOUND";
                 } else {
                     name = element.name;
-                    //pass the artists to a field to be shared with listener
-                    setArtistList(name);
+                    //pass the artists id to a list for use by click
+                    setArtistIdList(element.id);
                 }
 
                 if (element.images.size() < IMAGE_SIZE_INDEX)
@@ -251,23 +255,38 @@ public class MainActivityFragment extends Fragment implements TextView.OnEditorA
     }
 
     public void spotifySearch(String name) {
+        SpotifyService spotify = api.getService();
         spotify.searchArtists(name, new Callback<ArtistsPager>() {
             @Override
             public void success(final ArtistsPager artistsPager, Response response) {
                 getActivity().runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
+                        Log.d(LOG_TAG, "spotify search.");
                         showArtists(artistsPager);
                     }
                 });
             }
 
             @Override
-            public void failure(RetrofitError error) {
+            public void failure(final RetrofitError error) {
                 getActivity().runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
                         //showErrorMessage(error.getMessage());
+
+                        if (error == null) {
+                            Log.d(LOG_TAG, "null detected.");
+                        } else
+                        if (error == null) {
+                            Toast.makeText(getActivity(), "Network troubles...", Toast.LENGTH_LONG).show();
+                        } else {
+
+                        }
+
+
+
+
                     }
                 });
             }
