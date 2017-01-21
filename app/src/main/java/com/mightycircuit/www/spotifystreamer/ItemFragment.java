@@ -57,8 +57,8 @@ public class ItemFragment extends Fragment implements AbsListView.OnItemClickLis
     private ArtistCustomAdapter trackCustomAdapter;
     private EditText editText;
     private FetchTracksTask fetchTracksTask;
-    private ArrayList<ElementAdapter> tracks;    //the raw list of tracks
-    private List<String> trackNamesList; //the final list or preview tracks
+    private ArrayList<ElementAdapter> tracks;   //the raw list of tracks
+    private List<String> trackNamesList;        //the final list or preview tracks
 
     private List<String> albumImageList;
 
@@ -82,16 +82,6 @@ public class ItemFragment extends Fragment implements AbsListView.OnItemClickLis
      */
     private ListAdapter mAdapter;
 
-//    // TODO: Rename and change types of parameters
-//    public static ItemFragment newInstance(String param1, String param2) {
-//        ItemFragment fragment = new ItemFragment();
-//        Bundle args = new Bundle();
-//        args.putString(ARG_PARAM1, param1);
-//        args.putString(ARG_PARAM2, param2);
-//        fragment.setArguments(args);
-//        return fragment;
-//    }
-
     /**
      * Mandatory empty constructor for the fragment manager to instantiate the
      * fragment (e.g. upon screen orientation changes).
@@ -108,9 +98,7 @@ public class ItemFragment extends Fragment implements AbsListView.OnItemClickLis
             mParam2 = getArguments().getString(ARG_PARAM2);
         }
 
-        // TODO: copy the same structure from MainActivity Frag
-
-        trackNamesList=new ArrayList<>();
+        trackNamesList = new ArrayList<>();
         tracks = new ArrayList<>();
 
         //saved for track playback
@@ -119,31 +107,26 @@ public class ItemFragment extends Fragment implements AbsListView.OnItemClickLis
         //setup spotify wrapper api
         api = new SpotifyApi();
 
-        //check if first time
-        if (savedInstanceState != null) {
-            // read the  list from the saved state
-            tracks = savedInstanceState.getParcelableArrayList(PARCLE_SAVE_KEY);
-            Log.d(LOG_TAG, "onCreateView saved instance NOT null. tracks="+tracks);
+        if (getFragmentManager().getBackStackEntryCount() < 2) {
+            //check if first time
+            if (savedInstanceState != null) {
+                // read the  list from the saved state
+                tracks = savedInstanceState.getParcelableArrayList(PARCLE_SAVE_KEY);
+                Log.d(LOG_TAG, "onCreateView saved instance NOT null. tracks=" + tracks);
 
 
-        } else {
-            //This is the first time inflating this fragment so fetch new track list
-            Bundle args = getArguments();
-            String selectedTrack=args.getString(DataPassListener.DATA_RECEIVE);
+            } else {
+                //This is the first time inflating this fragment so fetch new track list
+                Bundle args = getArguments();
+                String selectedTrack = args.getString(DataPassListener.DATA_RECEIVE);
 
-            fetchTracksTask = new FetchTracksTask();
-            //fetchTracksTask.execute(artistsCheatGrab.get(position).name.toString());
-            fetchTracksTask.execute(selectedTrack);
+                fetchTracksTask = new FetchTracksTask();
+                fetchTracksTask.execute(selectedTrack);
 
+            }
+            trackCustomAdapter = new ArtistCustomAdapter(getActivity(), tracks);
         }
-        trackCustomAdapter = new ArtistCustomAdapter(getActivity(), tracks);
 
-        //Log.d(LOG_TAG, "trackCustomAdapter="+trackCustomAdapter);
-        //temporary for debuggin
-//        ElementAdapter adapterElement = new ElementAdapter("a", "Artist 1");
-//        tracks.add(adapterElement);
-//        adapterElement = new ElementAdapter("b", "Artist 2");
-//        tracks.add(adapterElement);
 
     }
 
@@ -154,38 +137,24 @@ public class ItemFragment extends Fragment implements AbsListView.OnItemClickLis
     }
 
 
-
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_tracks, container, false);
 
         Log.d(LOG_TAG, "Item Frag count=" + getFragmentManager().getBackStackEntryCount());
-        // Set the adapter
-       // mListView = (AbsListView) view.findViewById(android.R.id.list);
-        //((AdapterView<ListAdapter>) mListView).setAdapter(mAdapter);
 
         // Get a reference to the ListView, and attach this adapter to it.
         listView = (ListView) rootView.findViewById(R.id.listview_tracks);
         listView.setAdapter(trackCustomAdapter);
         listView.setOnItemClickListener(this);
 
-
-
-        // Set OnItemClickListener so we can be notified on item clicks
-       // mListView.setOnItemClickListener(this);
-
         return rootView;
     }
-
-
-
 
     @Override
     public void onAttach(Activity activity) {
         super.onAttach(activity);
-
-
 
         try {
             mCallback = (DataPassListener) activity;
@@ -216,25 +185,26 @@ public class ItemFragment extends Fragment implements AbsListView.OnItemClickLis
         //trigger the second fragment to launch
         mCallback.passDataImage(albumImageList.get(position), trackNamesList.get(position), trackFragment);
 
-        //mCallback.passData("test", itemFragment);
-
-
-        //Toast.makeText(getActivity(), "url:" + trackNamesList.get(position), Toast.LENGTH_SHORT).show();
-
-
     }
 
-
-
-    private void setTracksList(String vName){
-        //set the search results of just the names field for access by the click listener
+    /**
+     *set the search results of just the names field for access by the click listener
+     * @param vName
+     */
+    private void setTracksList(String vName) {
         this.trackNamesList.add(vName);
     }
-    private void setImageList(String vName){
+
+    /**
+     * set the list of album cover images to vName
+     * @param vName
+     */
+    private void setImageList(String vName) {
         this.albumImageList.add(vName);
 
     }
-    private List<String> getTracksList(){
+
+    private List<String> getTracksList() {
         //get the artist names list
         return this.trackNamesList;
     }
@@ -244,18 +214,18 @@ public class ItemFragment extends Fragment implements AbsListView.OnItemClickLis
      * fragment to allow an interaction in this fragment to be communicated
      * to the activity and potentially other fragments contained in that
      * activity.
-     * <p/>
-     * See the Android Training lesson <a href=
-     * "http://developer.android.com/training/basics/fragments/communicating.html"
-     * >Communicating with Other Fragments</a> for more information.
      */
     public interface OnFragmentInteractionListener {
         // TODO: Update argument type and name
         public void onFragmentInteraction(int id);
     }
 
+
+    /**
+     *display a toast msg on the main UI
+     * @param msg
+     */
     public void toastOnUI(final String msg) {
-        // display a toast msg on the main UI
         getActivity().runOnUiThread(new Runnable() {
             @Override
             public void run() {
@@ -270,10 +240,6 @@ public class ItemFragment extends Fragment implements AbsListView.OnItemClickLis
     public class FetchTracksTask extends AsyncTask<String, Void, TracksPager> {
         Exception error;
 
-//        public void FetchArtistTask(){
-//
-//        }
-
 
         @Override
         protected void onPreExecute() {
@@ -286,39 +252,29 @@ public class ItemFragment extends Fragment implements AbsListView.OnItemClickLis
 
             } catch (Exception e) {
                 toastOnUI(e.toString());
-                error=e;
-                Log.d(LOG_TAG, "caught error-preExec" +e);
+                error = e;
+                Log.d(LOG_TAG, "caught error-preExec" + e);
             }
 
-
-
         }
-
 
         @Override
         protected TracksPager doInBackground(String... params) {
             Log.d(LOG_TAG, "doInBackGround");
 
-
             //remove hardcoded and pass to asycnch
             String mArtistName = params[0];
-
-           // Log.d(LOG_TAG, "passed artist name=" + mArtistName);
-
-
 
             try {
                 TracksPager results = spotify.searchTracks(mArtistName);
                 return results;
             } catch (Exception e) {
-                Log.d(LOG_TAG, "caught error in backGround" +e);
+                Log.d(LOG_TAG, "caught error in backGround" + e);
                 toastOnUI(e.toString());
-                error=e;
+                error = e;
                 return null;
             }
             //Get the data from the server and return it
-
-
 
         }
 
@@ -335,14 +291,11 @@ public class ItemFragment extends Fragment implements AbsListView.OnItemClickLis
 
             trackCustomAdapter.clear();
 
-            if (tracksResults !=null) {
-                //!
+            if (tracksResults != null) {
+
                 List<Track> topTracks = tracksResults.tracks.items;
 
                 for (Track element : topTracks) {
-
-                    // Log.d(LOG_TAG, "images size=" + element.preview_url);
-
 
                     if (element.preview_url == null) {
                         Log.d(LOG_TAG, "null detected.");
@@ -355,7 +308,6 @@ public class ItemFragment extends Fragment implements AbsListView.OnItemClickLis
                     }
 
                     if (element.album.images.size() < IMAGE_SIZE_INDEX)
-
                     {
                         //blank place holder image
                         imageUrl = "https://placeimg.com/100/100/people";
@@ -372,20 +324,13 @@ public class ItemFragment extends Fragment implements AbsListView.OnItemClickLis
                     ElementAdapter adapterElement = new ElementAdapter(imageUrl, trackName);
                     tracks.add(adapterElement);
 
-
-                    //  Log.d(LOG_TAG, "track added to list:" + trackName);
                 }
 
                 Log.d(LOG_TAG, "Adapter updated.");
-            }
-            else {
+            } else {
                 //search came back empty due to error
                 toastOnUI("Unable to retreive tracks..");
             }
-
         }
-
-
     }
-
 }

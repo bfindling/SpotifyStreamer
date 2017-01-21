@@ -26,7 +26,6 @@ import java.util.List;
 //This is a back up copy to be kept for reference
 
 //ActionBarActivity deprecated so used AppCompatActivity instead....
-//public class MainActivity extends AppCompatActivity implements ItemFragment.OnFragmentInteractionListener, DataPassListener {
     public class MainActivity extends AppCompatActivity implements DataPassListener {
     List<ElementAdapter> placeholder;
     String id;
@@ -46,23 +45,11 @@ import java.util.List;
 
             getSupportFragmentManager().beginTransaction()
                     .add(R.id.fragment, new MainActivityFragment())
-                  //  .addToBackStack(null)
                     .commit();
 
         }
 
     }
-//
-//    @Override
-//    public void onFragmentInteraction(int id){
-//
-//        //TODO: pass the item id to the new frag
-////        ItemFragment Obj=(ItemFragment) getSupportFragmentManager().findFragmentById(R.id.fragmentTracks);
-////        Obj.setTrackList(placeholder);
-//
-//
-//    };
-
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -85,26 +72,14 @@ import java.util.List;
 
         return super.onOptionsItemSelected(item);
     }
-//    getSupportFragmentManager().addOnBackStackChangedListener(
-//            new FragmentManager.OnBackStackChangedListener() {
-//        public void onBackStackChanged() {
-//            // Update your UI here.
-//        }
-//    });
-
 
     @Override
     public void passData(String selectedArtist, Fragment fragment) {
 
-
-        //http://stackoverflow.com/questions/16036572/how-to-pass-values-between-fragments
         FragmentManager fm = getFragmentManager();
         Bundle args = new Bundle();
         args.putString(DataPassListener.DATA_RECEIVE, selectedArtist);
-       fragment.setArguments(args);
-
-
-
+        fragment.setArguments(args);
 
         getFragmentManager().beginTransaction()
                 //rename fragment
@@ -119,8 +94,6 @@ import java.util.List;
     @Override
     public void passDataImage(String image, String selectedArtist, Fragment fragment) {
         FragmentManager fm = getFragmentManager();
-
-
 
         Bundle args = new Bundle();
         args.putString(DataPassListener.DATA_RECEIVE, selectedArtist);
@@ -137,7 +110,6 @@ import java.util.List;
     @Override
     public void onBackPressed() {
         FragmentManager fm = getFragmentManager();
-        //Fragment f = fm.findFragmentById(R.id.fragment);
         Log.d(LOG_TAG, "BackButton Frag count=" + fm.getBackStackEntryCount());
 
 
@@ -149,8 +121,6 @@ import java.util.List;
             finish();
             Log.d(LOG_TAG, "back button finished");
         }
-
-        //super.onBackPressed();
 
     }
 
